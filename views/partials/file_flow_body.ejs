@@ -49,6 +49,30 @@
       pointer-events: none;
     }
 
+    /* ── ACTION COLUMN BADGES ── */
+    .action-badge-done {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      background: #e6f4ea;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+    .action-badge-inprocess {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      background: #fff8e1;
+      color: #f57f17;
+      border: 1px solid #ffe082;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .form-grid { grid-template-columns: 1fr !important; }
@@ -78,6 +102,8 @@
 
 <%
   const hasActiveHold = forms.some(f => f.hold);
+  const isViewer = typeof viewer !== 'undefined' && viewer;
+  const lastIndex = forms.length - 1;
 %>
 
 <div class="flow-card">
@@ -89,7 +115,10 @@
   </div>
 
   <!-- Saved Records -->
-  <div class="section-label">Saved Records</div>
+  <div class="section-label" style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+    Saved Records for
+    <span class="docket-chip"><%= docket_number %></span>
+  </div>
 
   <div class="table-wrap">
     <table class="flow-table">
@@ -101,7 +130,7 @@
           <th>Date</th>
           <th>Subject</th>
           <th>File</th>
-          <th>Hold</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -134,20 +163,32 @@
             <% } %>
           </td>
 
+          <!-- ACTION COLUMN -->
           <td>
             <% if(f.hold){ %>
+              <!-- Hold exists: always show hold info regardless of viewer -->
               <div>
                 <span class="hold-badge">⏸ On Hold</span>
                 <p class="hold-desc"><%=f.hold_desc%></p>
-                <button
-                  type="button"
-                  class="btn-cancel-hold"
-                  style="margin-top:8px;"
-                  onclick="showCancelConfirm('/cancel-hold/<%=f.id%>?docket=<%=docket_number%>')">
-                  Cancel Hold
-                </button>
+                <% if(!isViewer){ %>
+                  <button
+                    type="button"
+                    class="btn-cancel-hold"
+                    style="margin-top:8px;"
+                    onclick="showCancelConfirm('/cancel-hold/<%=f.id%>?docket=<%=docket_number%>')">
+                    Cancel Hold
+                  </button>
+                <% } %>
               </div>
+            <% } else if(isViewer) { %>
+              <!-- Viewer mode: show Done / In Process badges instead of buttons -->
+              <% if(i === lastIndex){ %>
+                <span class="action-badge-inprocess">In Process</span>
+              <% } else { %>
+                <span class="action-badge-done">Done</span>
+              <% } %>
             <% } else { %>
+              <!-- Admin mode: show original Hold button -->
               <button
                 class="btn-view"
                 onclick="showHoldModal('/hold/<%=f.id%>?docket=<%=docket_number%>')">
@@ -159,7 +200,8 @@
         </tr>
         <% }) %>
 
-        <!-- Bottom row: Add New Flow OR hold notice -->
+        <!-- Bottom row: Add New Flow OR hold notice — hidden for viewers -->
+        <% if(!isViewer){ %>
         <tr class="add-row">
           <td colspan="7">
             <% if(hasActiveHold){ %>
@@ -171,12 +213,14 @@
             <% } %>
           </td>
         </tr>
+        <% } %>
 
       </tbody>
     </table>
   </div>
 
-  <!-- Add Flow Panel (below table) -->
+  <!-- Add Flow Panel (below table) — hidden for viewers -->
+  <% if(!isViewer){ %>
   <div class="add-flow-panel" id="formDiv">
     <div class="section-label" style="margin-bottom:20px;">New Flow Entry</div>
     <form action="/file_flow?docket=<%=docket_number%>" method="POST" enctype="multipart/form-data">
@@ -241,8 +285,10 @@
       </div>
     </form>
   </div>
+  <% } %>
 
   <!-- ── HOLD MODAL ── -->
+  <% if(!isViewer){ %>
   <div class="hold-modal-overlay" id="holdModal" onclick="if(event.target===this)closeHoldModal()">
     <div class="hold-modal">
       <div class="hold-modal-title">Place File on Hold</div>
@@ -286,10 +332,12 @@
       <form id="cancelHoldRealForm" method="POST" style="display:none;"></form>
     </div>
   </div>
+  <% } %>
 
 </div>
 
 <script>
+  <% if(!isViewer){ %>
   let _holdAction = '';
   let _cancelAction = '';
 
@@ -386,4 +434,5 @@
     document.getElementById("externalName").style.display = "none";
     document.getElementById("uploadDiv").style.display = "none";
   }
+  <% } %>
 </script>

@@ -35,7 +35,7 @@ const forget_password = require("./routes/forget_password");
 
 // ✅ Google Auth route
 const googleAuthRoutes = require("./routes/google_auth");
-
+const viewer = require("./routes/viewer_file_flow");
 // ------------------- USE ROUTES -------------------
 app.use("/", file_routes);
 app.use("/", search_routes);
@@ -45,7 +45,7 @@ app.use("/", signin);
 app.use("/", signup);
 app.use("/", logout);
 app.use("/", forget_password);
-
+app.use("/",viewer);
 // 👉 IMPORTANT: keep this AFTER passport setup
 app.use("/auth", googleAuthRoutes);
 

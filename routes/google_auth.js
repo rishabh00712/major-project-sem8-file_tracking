@@ -13,13 +13,13 @@ passport.use(new GoogleStrategy({
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
-      console.log("🔥 Google profile received:");
+      //console.log("🔥 Google profile received:");
 
       const email = profile.emails?.[0]?.value;
       const name = profile.displayName;
 
-      console.log("📧 Email:", email);
-      console.log("👤 Name:", name);
+      //console.log("📧 Email:", email);
+      //console.log("👤 Name:", name);
 
       if (!email) {
         console.log("❌ No email found in profile");
@@ -44,7 +44,7 @@ passport.use(new GoogleStrategy({
           [name, email, "google_auth"]
         );
 
-        console.log("✅ New user created:");
+        //console.log("✅ New user created:");
 
         return done(null, newUser.rows[0]);
       }
@@ -58,20 +58,20 @@ passport.use(new GoogleStrategy({
 
 // ================== SESSION ==================
 passport.serializeUser((user, done) => {
-  console.log("💾 serializeUser:", user.id);
+  //console.log("💾 serializeUser:", user.id);
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    console.log("🔄 deserializeUser ID:", id);
+    //console.log("🔄 deserializeUser ID:", id);
 
     const result = await db.query(
       "SELECT * FROM store_emails WHERE id=$1",
       [id]
     );
 
-    console.log("👤 User loaded from DB:");
+   // console.log("👤 User loaded from DB:");
 
     done(null, result.rows[0]);
   } catch (err) {

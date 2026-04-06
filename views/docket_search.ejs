@@ -1,0 +1,194 @@
+<%- include("partials/header", { docker_search: true }) %>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    .search-wrapper {
+     min-height: calc(100vh - 90px);
+    display: flex;
+    align-items: flex-start;      /* was: center */
+    justify-content: center;
+    background: #eae6de;
+    padding: 48px 20px 20px;      /* was: 20px — adds top breathing room */
+    }
+  .search-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.08);
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 460px;
+    animation: cardIn 0.4s cubic-bezier(.4,0,.2,1);
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .search-icon {
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .search-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a2332;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .search-sub {
+    font-size: 13px;
+    color: #8a9aaa;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .field-group label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5a6a7a;
+  }
+
+  .field-group input {
+    padding: 12px 16px;
+    border: 1.5px solid #ddd8ce;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: #1a2332;
+    background: #faf9f7;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .field-group input:focus {
+    border-color: #d4a843;
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.12);
+    background: #fff;
+  }
+
+  .field-group input::placeholder {
+    color: #b0bcc8;
+  }
+
+  /* Error state */
+  .field-group input.error {
+    border-color: #e05252;
+    box-shadow: 0 0 0 3px rgba(224,82,82,0.10);
+  }
+
+  .error-msg {
+    font-size: 11px;
+    color: #e05252;
+    margin-top: 2px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 13px;
+    background: #1a2332;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .btn-submit:hover { background: #253347; }
+  .btn-submit:active { transform: scale(0.98); }
+
+  /* Flash error from server */
+  .server-error {
+    background: #fff0f0;
+    border: 1px solid #f5c6c6;
+    color: #c0392b;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: none;
+  }
+  .server-error.show { display: block; }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .search-card {
+      padding: 32px 20px;
+      border-radius: 12px;
+    }
+    .search-title { font-size: 22px; }
+  }
+</style>
+
+<div class="search-wrapper">
+  <div class="search-card">
+
+    <div class="search-icon">📂</div>
+    <div class="search-title">File Flow Viewer</div>
+    <div class="search-sub">Enter a docket number to view its file flow records</div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="server-error show">⚠ <%= error %></div>
+    <% } %>
+
+    <form action="/view_flow" method="POST" onsubmit="return validate()">
+      <div class="field-group">
+        <label>Docket Number</label>
+        <input
+          type="text"
+          name="docket"
+          id="docketInput"
+          placeholder="e.g. DKT-2024-001"
+          autocomplete="off"
+          autofocus
+        >
+        <span class="error-msg" id="docketError">Please enter a docket number.</span>
+      </div>
+
+      <button type="submit" class="btn-submit">View File Flow →</button>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  function validate() {
+    const input = document.getElementById('docketInput');
+    const errMsg = document.getElementById('docketError');
+    if (!input.value.trim()) {
+      input.classList.add('error');
+      errMsg.classList.add('show');
+      input.focus();
+      return false;
+    }
+    input.classList.remove('error');
+    errMsg.classList.remove('show');
+    return true;
+  }
+
+  document.getElementById('docketInput').addEventListener('input', function() {
+    this.classList.remove('error');
+    document.getElementById('docketError').classList.remove('show');
+  });
+</script>
