@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New File Entry</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #eae6de; min-height: 100%; font-family: 'DM Sans', sans-serif; }
+
+    @keyframes formSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fieldFadeIn {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity:0; transform:translateY(-18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity:0; } to { opacity:1; }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    @keyframes barGrow {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
+      50%       { box-shadow: 0 0 0 6px rgba(212,168,67,0); }
+    }
+
+    .conditional-wrap {
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+      max-height: 120px;
+      opacity: 1;
+    }
+    .conditional-wrap.hidden {
+      max-height: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr !important; }
+      .form-card { padding: 28px 20px !important; margin: 16px 12px !important; }
+      .form-footer { flex-wrap: wrap !important; }
+      .form-footer button { flex: 1 !important; min-width: 120px !important; }
+      .header-inner { padding: 16px 20px !important; flex-wrap: wrap !important; gap: 12px !important; }
+      .header-title { font-size: 18px !important; }
+      .header-right { gap: 8px !important; }
+      .btn-nav { padding: 8px 14px !important; font-size: 11px !important; }
+    }
+
+    @media (max-width: 480px) {
+      .form-card { padding: 20px 14px !important; margin: 10px 8px !important; }
+      .form-footer { flex-direction: column !important; }
+      .form-footer button { width: 100% !important; }
+      .header-inner { flex-direction: column !important; align-items: flex-start !important; padding: 14px 16px !important; }
+      .header-right { width: 100% !important; justify-content: flex-start !important; }
+      .header-title { font-size: 16px !important; }
+      .header-eyebrow { font-size: 9px !important; }
+      .btn-nav { padding: 7px 12px !important; font-size: 10px !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── FORM CARD ── -->
+<div class="form-card" style="background:#ffffff; border:1px solid rgba(184,146,42,0.18); border-top:3px solid #b8922a; border-radius:2px; padding:40px 44px; max-width:860px; margin:36px auto; box-shadow:0 4px 32px rgba(6,23,46,0.08), 0 1px 4px rgba(6,23,46,0.04); animation:formSlideUp 0.7s cubic-bezier(.4,0,.2,1) 0.2s both;">
+
+  <!-- Card Header -->
+  <div style="display:flex; align-items:center; gap:14px; margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid #ede8df;">
+    <div style="width:40px; height:40px; background:linear-gradient(135deg,#d4a843,#b8922a); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📄</div>
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:#06172e; letter-spacing:0.02em;">New File Entry</div>
+      <div style="font-size:12px; color:#8a9aaa; margin-top:2px; letter-spacing:0.04em;">Complete all required fields to register a new file</div>
+    </div>
+  </div>
+
+  <form action="/file_add" method="POST">
+    <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:32px 28px;">
+
+      <!-- Section: File Details -->
+      <div style="grid-column:1/-1; font-size:10px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:#b8922a; padding-bottom:8px; border-bottom:1px solid #ede8df; margin-top:8px;">
+        File Details
+      </div>
+
+      <!-- Subject -->
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.25s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Subject <span style="color:#b8922a;">*</span>
+        </label>
+        <select name="subject" id="subject" onchange="handleSubject()" required
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7 url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%23b8922a%22 d=%22M6 8L1 3h10z%22/%3E%3C/svg%3E') no-repeat right 14px center; border:1px solid #ddd8ce; border-radius:2px; padding:10px 36px 10px 14px; width:100%; outline:none; appearance:none; -webkit-appearance:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff url(data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%23b8922a%22 d=%22M6 8L1 3h10z%22/%3E%3C/svg%3E) no-repeat right 14px center';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7 url(data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%23b8922a%22 d=%22M6 8L1 3h10z%22/%3E%3C/svg%3E) no-repeat right 14px center';">
+          <option value="">Select Subject</option>
+          <option value="Tax Invoice">Tax Invoice</option>
+          <option value="Payable Bill">Payable Bill</option>
+          <option value="Bill">Bill</option>
+          <option value="Letter">Letter</option>
+        </select>
+      </div>
+
+      <!-- Date -->
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.32s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Date <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="date" id="date" name="date" required
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none; appearance:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+      <!-- Project Code -->
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.39s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Project Code <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="text" name="project_code" placeholder="e.g. WB-2024-001" required
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+      <!-- Docket Number -->
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.46s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Docket Number <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="text" name="docket_number" placeholder="e.g. DKT-00123" required
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+      <!-- Description -->
+      <div style="display:flex; flex-direction:column; gap:7px; grid-column:1/-1; animation:fieldFadeIn 0.5s ease 0.53s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">Description</label>
+        <textarea name="description" placeholder="Add relevant notes or remarks…"
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none; resize:vertical; min-height:90px; line-height:1.6;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';"></textarea>
+      </div>
+
+      <!-- Section: Payment -->
+      <div id="paymentSectionLabel" style="grid-column:1/-1; font-size:10px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:#b8922a; padding-bottom:8px; border-bottom:1px solid #ede8df; margin-top:8px;">
+        Payment Details
+      </div>
+
+      <!-- Pay Amount -->
+      <div class="conditional-wrap" id="amountField" style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.60s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Pay Amount <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="number" id="pay_amount" name="pay_amount" placeholder="0.00"
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+      <!-- Payable Name -->
+      <div class="conditional-wrap" id="payableField" style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.67s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Payable Name <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="text" id="payable_name" name="payable_name" placeholder="Enter payable name"
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+      <!-- Section: Department & Contact -->
+      <div style="grid-column:1/-1; font-size:10px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:#b8922a; padding-bottom:8px; border-bottom:1px solid #ede8df; margin-top:8px;">
+        Department & Contact
+      </div>
+
+      <!-- Department -->
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.74s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Department <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="text" name="department" placeholder="e.g. Finance Division" required
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+      <!-- PI Name -->
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.81s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          PI Name <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="text" name="pi_name" placeholder="Principal Investigator" required
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+      <!-- Email -->
+      <div style="display:flex; flex-direction:column; gap:7px; grid-column:1/-1; animation:fieldFadeIn 0.5s ease 0.88s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Email <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="email" name="email" placeholder="official@wb.gov.in" required
+          style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
+          onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+          onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="form-footer" style="margin-top:32px; padding-top:24px; border-top:1px solid #ede8df; display:flex; align-items:center; justify-content:flex-end; gap:14px; animation:fieldFadeIn 0.5s ease 0.95s both;">
+      <button type="reset"
+        style="padding:11px 24px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; background:transparent; border:1px solid #ddd8ce; color:#8a9aaa; border-radius:2px; cursor:pointer;"
+        onmouseover="this.style.borderColor='#b8922a'; this.style.color='#b8922a';"
+        onmouseout="this.style.borderColor='#ddd8ce'; this.style.color='#8a9aaa';">
+        Clear
+      </button>
+      <button type="submit"
+        style="padding:12px 40px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#d4a843,#b8922a); border:none; color:#06172e; border-radius:2px; cursor:pointer;"
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 28px rgba(184,146,42,0.35)';"
+        onmouseout="this.style.transform=''; this.style.boxShadow='';">
+        Submit File
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function handleSubject() {
+  const subject   = document.getElementById("subject").value;
+  const amountField  = document.getElementById("amountField");
+  const payableField = document.getElementById("payableField");
+  const paymentLabel = document.getElementById("paymentSectionLabel");
+  const amount    = document.getElementById("pay_amount");
+  const payable   = document.getElementById("payable_name");
+
+  if(subject === "Letter"){
+    amountField.classList.add("hidden");
+    payableField.classList.add("hidden");
+    paymentLabel.style.display = "none";
+    amount.removeAttribute("required");
+    payable.removeAttribute("required");
+  } else {
+    amountField.classList.remove("hidden");
+    payableField.classList.remove("hidden");
+    paymentLabel.style.display = "";
+    amount.setAttribute("required", true);
+    payable.setAttribute("required", true);
+  }
+}
+
+window.onload = function() {
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("date").value = today;
+}
+</script>
+
+</body>
+</html>

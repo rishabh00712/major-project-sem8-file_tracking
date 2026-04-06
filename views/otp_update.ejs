@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+    html, body {
+      min-height: 100%;
+      width: 100%;
+      background: #eae6de;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    @keyframes formSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fieldFadeIn {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-6px); }
+      80%       { transform: translateX(6px); }
+    }
+
+    .otp-input {
+      width: 52px;
+      height: 58px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #06172e;
+      background: #faf9f7;
+      border: 1px solid #ddd8ce;
+      border-radius: 2px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      caret-color: #b8922a;
+    }
+
+    .otp-input:focus {
+      border-color: #b8922a;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(184,146,42,0.1);
+    }
+
+    .otp-input.filled {
+      border-color: #b8922a;
+      background: #fff;
+      color: #b8922a;
+    }
+
+    .otp-input.error {
+      border-color: #c0392b;
+      background: #fff8f8;
+      animation: shake 0.4s ease;
+    }
+
+    @media (max-width: 480px) {
+      .otp-input {
+        width: 42px !important;
+        height: 50px !important;
+        font-size: 18px !important;
+      }
+      .otp-card {
+        padding: 24px 18px !important;
+        margin: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div style="min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center; background:#eae6de; padding:20px;">
+
+  <div class="otp-card" style="background:#ffffff; border:1px solid rgba(184,146,42,0.18); border-top:3px solid #b8922a; border-radius:2px; padding:40px 44px; width:100%; max-width:460px; box-shadow:0 4px 32px rgba(6,23,46,0.08), 0 1px 4px rgba(6,23,46,0.04); animation:formSlideUp 0.7s cubic-bezier(.4,0,.2,1) 0.2s both;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid #ede8df;">
+      <div style="width:40px; height:40px; background:linear-gradient(135deg,#d4a843,#b8922a); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🔑</div>
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:#06172e; letter-spacing:0.02em;">OTP Verification</div>
+        <div style="font-size:12px; color:#8a9aaa; margin-top:2px; letter-spacing:0.04em;">Enter the code sent to your email</div>
+      </div>
+    </div>
+
+    <!-- Email info -->
+    <div style="display:flex; align-items:center; gap:10px; background:#faf9f7; border:1px solid #ede8df; border-left:3px solid #b8922a; border-radius:2px; padding:12px 16px; margin-bottom:28px; animation:fieldFadeIn 0.5s ease 0.3s both;">
+      <span style="font-size:16px;">✉</span>
+      <div>
+        <div style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">OTP sent to</div>
+        <div style="font-size:13px; font-weight:600; color:#06172e; margin-top:2px;"><%= email %></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <% if(typeof error !== 'undefined'){ %>
+    <div style="display:flex; align-items:center; gap:10px; background:rgba(192,57,43,0.06); border:1px solid rgba(192,57,43,0.2); border-radius:2px; padding:12px 16px; margin-bottom:24px; animation:fieldFadeIn 0.4s ease both;">
+      <span style="font-size:15px;">⚠</span>
+      <div style="font-size:13px; font-weight:500; color:#c0392b;"><%= error %></div>
+    </div>
+    <% } %>
+
+    <!-- OTP Form -->
+    <form action="<%= action %>" method="POST" id="otpForm">
+
+      <div style="margin-bottom:10px;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Enter OTP <span style="color:#b8922a;">*</span>
+        </label>
+      </div>
+
+      <!-- OTP boxes -->
+      <div style="display:flex; gap:10px; justify-content:center; margin-bottom:8px; animation:fieldFadeIn 0.5s ease 0.4s both;">
+        <input class="otp-input" type="text" name="digit1" id="d1" maxlength="1" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+        <input class="otp-input" type="text" name="digit2" id="d2" maxlength="1" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+        <input class="otp-input" type="text" name="digit3" id="d3" maxlength="1" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+
+        <!-- divider dot -->
+        <div style="display:flex; align-items:center; color:#b8922a; font-size:20px; font-weight:700; padding:0 2px;">·</div>
+
+        <input class="otp-input" type="text" name="digit4" id="d4" maxlength="1" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+        <input class="otp-input" type="text" name="digit5" id="d5" maxlength="1" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+        <input class="otp-input" type="text" name="digit6" id="d6" maxlength="1" inputmode="numeric" pattern="[0-9]*" required autocomplete="off">
+      </div>
+
+      <div style="text-align:center; font-size:11px; color:#b0bbc6; margin-bottom:28px; animation:fieldFadeIn 0.5s ease 0.5s both;">
+        Tip: paste your OTP and it will fill automatically
+      </div>
+
+      <!-- Submit -->
+      <div style="animation:fieldFadeIn 0.5s ease 0.6s both;">
+        <button type="submit" id="submitBtn"
+          style="width:100%; padding:12px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; background:linear-gradient(135deg,#d4a843,#b8922a); border:none; color:#06172e; border-radius:2px; cursor:pointer;"
+          onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 28px rgba(184,146,42,0.35)';"
+          onmouseout="this.style.transform=''; this.style.boxShadow='';">
+          Verify OTP
+        </button>
+      </div>
+
+    </form>
+
+    <!-- Back link -->
+    <div style="margin-top:20px; padding-top:18px; border-top:1px solid #ede8df; animation:fieldFadeIn 0.5s ease 0.7s both;">
+      <a href="/"
+        style="font-size:12px; font-weight:500; color:#5a6a7a; text-decoration:none; display:flex; align-items:center; gap:6px;"
+        onmouseover="this.style.color='#b8922a';"
+        onmouseout="this.style.color='#5a6a7a';">
+        <span style="color:#b8922a;">←</span> Back to Home
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const inputs = [
+    document.getElementById('d1'),
+    document.getElementById('d2'),
+    document.getElementById('d3'),
+    document.getElementById('d4'),
+    document.getElementById('d5'),
+    document.getElementById('d6')
+  ];
+
+  // auto focus first
+  inputs[0].focus();
+
+  inputs.forEach(function(input, index) {
+
+    // type: move to next
+    input.addEventListener('input', function() {
+      // allow only numbers
+      this.value = this.value.replace(/[^0-9]/g, '');
+
+      if(this.value.length === 1) {
+        this.classList.add('filled');
+        this.classList.remove('error');
+        if(index < 5) {
+          inputs[index + 1].focus();
+        } else {
+          // all filled — auto submit
+          document.getElementById('otpForm').submit();
+        }
+      } else {
+        this.classList.remove('filled');
+      }
+    });
+
+    // backspace: clear and go back
+    input.addEventListener('keydown', function(e) {
+      if(e.key === 'Backspace') {
+        if(this.value === '' && index > 0) {
+          inputs[index - 1].value = '';
+          inputs[index - 1].classList.remove('filled');
+          inputs[index - 1].focus();
+        } else {
+          this.value = '';
+          this.classList.remove('filled');
+        }
+      }
+      // arrow keys
+      if(e.key === 'ArrowLeft' && index > 0)  inputs[index - 1].focus();
+      if(e.key === 'ArrowRight' && index < 5) inputs[index + 1].focus();
+    });
+
+    // paste: distribute across boxes
+    input.addEventListener('paste', function(e) {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData)
+        .getData('text')
+        .replace(/[^0-9]/g, '')
+        .slice(0, 6);
+
+      pasted.split('').forEach(function(char, i) {
+        if(inputs[i]) {
+          inputs[i].value = char;
+          inputs[i].classList.add('filled');
+        }
+      });
+
+      // focus last filled or submit
+      const lastIndex = Math.min(pasted.length, 5);
+      inputs[lastIndex].focus();
+
+      if(pasted.length === 6) {
+        setTimeout(() => document.getElementById('otpForm').submit(), 300);
+      }
+    });
+
+    // click: select content
+    input.addEventListener('focus', function() {
+      this.select();
+    });
+
+  });
+</script>
+
+</body>
+</html>

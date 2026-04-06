@@ -1,0 +1,389 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/file_flow_style.css">
+</head>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #eae6de; min-height: 100%; font-family: 'DM Sans', sans-serif; }
+
+    @keyframes formSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fieldFadeIn {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity:0; transform:translateY(-18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity:0; } to { opacity:1; }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    @keyframes barGrow {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
+      50%       { box-shadow: 0 0 0 6px rgba(212,168,67,0); }
+    }
+
+    .conditional-wrap {
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+      max-height: 120px;
+      opacity: 1;
+    }
+    .conditional-wrap.hidden {
+      max-height: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr !important; }
+      .form-card { padding: 28px 20px !important; margin: 16px 12px !important; }
+      .form-footer { flex-wrap: wrap !important; }
+      .form-footer button { flex: 1 !important; min-width: 120px !important; }
+      .header-inner { padding: 16px 20px !important; flex-wrap: wrap !important; gap: 12px !important; }
+      .header-title { font-size: 18px !important; }
+      .header-right { gap: 8px !important; }
+      .btn-nav { padding: 8px 14px !important; font-size: 11px !important; }
+    }
+
+    @media (max-width: 480px) {
+      .form-card { padding: 20px 14px !important; margin: 10px 8px !important; }
+      .form-footer { flex-direction: column !important; }
+      .form-footer button { width: 100% !important; }
+      .header-inner { flex-direction: column !important; align-items: flex-start !important; padding: 14px 16px !important; }
+      .header-right { width: 100% !important; justify-content: flex-start !important; }
+      .header-title { font-size: 16px !important; }
+      .header-eyebrow { font-size: 9px !important; }
+      .btn-nav { padding: 7px 12px !important; font-size: 10px !important; }
+    }
+  </style>
+
+<link rel="stylesheet" href="/css/file_flow_style.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<%
+  const hasActiveHold = forms.some(f => f.hold);
+%>
+
+<div class="flow-card">
+
+  <!-- Header -->
+  <div class="flow-card-header">
+    <div class="flow-card-icon">🔄</div>
+    <div class="flow-card-title">File Flow</div>
+  </div>
+
+  <!-- Saved Records -->
+  <div class="section-label">Saved Records</div>
+
+  <div class="table-wrap">
+    <table class="flow-table">
+      <thead>
+        <tr>
+          <th>Flow</th>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Date</th>
+          <th>Subject</th>
+          <th>File</th>
+          <th>Hold</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <% forms.forEach(function(f, i){ %>
+        <tr style="animation-delay:<%=0.1 + i*0.06%>s">
+
+          <td>
+            <span class="flow-badge <%=f.flow==='Internal'?'internal':'external'%>">
+              <%=f.flow%>
+            </span>
+          </td>
+
+          <td style="font-weight:500;"><%=f.name%></td>
+          <td style="color:#8a9aaa;"><%=f.department%></td>
+          <td style="color:#8a9aaa;">
+            <%= new Date(f.date).toLocaleDateString('en-GB') %>
+          </td>
+          <td><%=f.subject%></td>
+
+          <td>
+            <% if(f.image_file){ %>
+              <img
+                src="<%=f.image_file%>"
+                style="width:50px; height:50px; object-fit:cover; cursor:pointer;"
+                onclick="window.open('<%=f.image_file%>')"
+              >
+            <% } else { %>
+              <span style="color:#c0c8d0;">—</span>
+            <% } %>
+          </td>
+
+          <td>
+            <% if(f.hold){ %>
+              <div>
+                <span class="hold-badge">⏸ On Hold</span>
+                <p class="hold-desc"><%=f.hold_desc%></p>
+                <button
+                  type="button"
+                  class="btn-cancel-hold"
+                  style="margin-top:8px;"
+                  onclick="showCancelConfirm('/cancel-hold/<%=f.id%>?docket=<%=docket_number%>')">
+                  Cancel Hold
+                </button>
+              </div>
+            <% } else { %>
+              <button
+                class="btn-view"
+                onclick="showHoldModal('/hold/<%=f.id%>?docket=<%=docket_number%>')">
+                Hold
+              </button>
+            <% } %>
+          </td>
+
+        </tr>
+        <% }) %>
+
+        <!-- Bottom row: Add New Flow OR hold notice -->
+        <tr class="add-row">
+          <td colspan="7">
+            <% if(hasActiveHold){ %>
+              <span class="hold-active-notice">
+                ⏸ A hold is active — new flow entries are disabled
+              </span>
+            <% } else { %>
+              <button class="btn-add" onclick="showForm()">+ Add New Flow</button>
+            <% } %>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add Flow Panel (below table) -->
+  <div class="add-flow-panel" id="formDiv">
+    <div class="section-label" style="margin-bottom:20px;">New Flow Entry</div>
+    <form action="/file_flow?docket=<%=docket_number%>" method="POST" enctype="multipart/form-data">
+      <div class="form-grid">
+
+        <div class="field-group">
+          <label>File Flow</label>
+          <select name="file_flow" id="flow" onchange="flowChange()">
+            <option value="">Select</option>
+            <option value="Internal">Internal</option>
+            <option value="External">External</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date" name="date" id="date">
+        </div>
+
+        <div class="field-group">
+          <label>Name</label>
+          <select name="name" id="internalNames" style="display:none;">
+            <option value="">Select Officer</option>
+            <option>EA Sukhen Adhikari</option>
+            <option>BA Bimal Adhya</option>
+            <option>Sanjay Dey</option>
+            <option>Mangranjana</option>
+            <option>Bishwarup Bhattacharjee</option>
+            <option>Saugata Das</option>
+            <option>Sudip Das</option>
+            <option>Ranadeep Dhara</option>
+            <option>Ruma Das Ghosh</option>
+            <option>Anir Uman</option>
+            <option>Alok Kumar</option>
+            <option>Pranita Dutta</option>
+            <option>Ananda Dulal Paul</option>
+            <option>Chirashree Roychudhary</option>
+          </select>
+          <input type="text" name="name" id="externalName" placeholder="Enter name">
+        </div>
+
+        <div class="field-group">
+          <label>Department</label>
+          <input type="text" name="department" id="dept" placeholder="e.g. Finance Division" required>
+        </div>
+
+        <div class="field-group full">
+          <label>Subject</label>
+          <input type="text" name="subject" placeholder="Enter subject">
+        </div>
+
+        <div class="field-group full" id="uploadDiv">
+          <label>File Upload</label>
+          <input type="file" name="file" accept="image/*" capture="environment">
+        </div>
+
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-reset" onclick="closeForm()">Cancel</button>
+        <button type="submit" class="btn-submit">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── HOLD MODAL ── -->
+  <div class="hold-modal-overlay" id="holdModal" onclick="if(event.target===this)closeHoldModal()">
+    <div class="hold-modal">
+      <div class="hold-modal-title">Place File on Hold</div>
+      <div class="hold-modal-sub">Provide a reason for the hold</div>
+      <label>Hold Description</label>
+      <textarea id="holdDesc" placeholder="Enter hold description…"></textarea>
+      <div class="hold-modal-footer">
+        <button type="button" class="btn-reset" onclick="closeHoldModal()">Cancel</button>
+        <button type="button" class="btn-hold" onclick="submitHold()">Submit Hold</button>
+      </div>
+      <!-- Hidden real form submitted on confirm -->
+      <form id="holdRealForm" method="POST" style="display:none;">
+        <input type="hidden" name="description" id="holdDescHidden">
+      </form>
+    </div>
+  </div>
+
+  <!-- ── HOLD CONFIRM DIALOG ── -->
+  <div class="confirm-overlay" id="confirmModal">
+    <div class="confirm-box">
+      <div class="confirm-icon">⏸</div>
+      <div class="confirm-title">Confirm Hold</div>
+      <div class="confirm-msg">Are you sure you want to place this file on hold? This will pause all new flow entries.</div>
+      <div class="confirm-footer">
+        <button class="btn-reset" onclick="confirmNo()">Cancel</button>
+        <button class="btn-hold" onclick="confirmYes()">Yes, Hold</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CANCEL HOLD CONFIRM DIALOG ── -->
+  <div class="cancel-confirm-overlay confirm-overlay" id="cancelConfirmModal">
+    <div class="confirm-box">
+      <div class="confirm-icon">✕</div>
+      <div class="confirm-title">Cancel Hold</div>
+      <div class="confirm-msg">Are you sure you want to remove the hold on this file? Flow entries will be re-enabled.</div>
+      <div class="confirm-footer">
+        <button class="btn-reset" onclick="cancelConfirmNo()">Go Back</button>
+        <button class="btn-cancel-hold" style="flex:1;padding:10px 18px;font-size:12px;" onclick="cancelConfirmYes()">Yes, Remove Hold</button>
+      </div>
+      <form id="cancelHoldRealForm" method="POST" style="display:none;"></form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let _holdAction = '';
+  let _cancelAction = '';
+
+  // ── HOLD MODAL ──
+  function showHoldModal(action) {
+    _holdAction = action;
+    document.getElementById('holdDesc').value = '';
+    document.getElementById('holdDesc').style.borderColor = '#ddd8ce';
+    document.getElementById('holdModal').classList.add('open');
+    setTimeout(() => document.getElementById('holdDesc').focus(), 300);
+  }
+
+  function closeHoldModal() {
+    document.getElementById('holdModal').classList.remove('open');
+  }
+
+  function submitHold() {
+    const desc = document.getElementById('holdDesc').value.trim();
+    if (!desc) {
+      document.getElementById('holdDesc').style.borderColor = '#d4742a';
+      document.getElementById('holdDesc').focus();
+      return;
+    }
+    document.getElementById('holdRealForm').action = _holdAction;
+    document.getElementById('holdDescHidden').value = desc;
+    document.getElementById('holdModal').classList.remove('open');
+    document.getElementById('confirmModal').classList.add('open');
+  }
+
+  function confirmYes() {
+    document.getElementById('confirmModal').classList.remove('open');
+    document.getElementById('holdRealForm').submit();
+  }
+
+  function confirmNo() {
+    document.getElementById('confirmModal').classList.remove('open');
+    document.getElementById('holdModal').classList.add('open');
+  }
+
+  // ── CANCEL HOLD CONFIRM ──
+  function showCancelConfirm(action) {
+    _cancelAction = action;
+    document.getElementById('cancelConfirmModal').classList.add('open');
+  }
+
+  function cancelConfirmYes() {
+    document.getElementById('cancelHoldRealForm').action = _cancelAction;
+    document.getElementById('cancelConfirmModal').classList.remove('open');
+    document.getElementById('cancelHoldRealForm').submit();
+  }
+
+  function cancelConfirmNo() {
+    document.getElementById('cancelConfirmModal').classList.remove('open');
+  }
+
+  // ── ADD FLOW PANEL ──
+  function showForm() {
+    const panel = document.getElementById("formDiv");
+    panel.classList.add("open");
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function closeForm() {
+    document.getElementById("formDiv").classList.remove("open");
+  }
+
+  function flowChange() {
+    const flow = document.getElementById("flow").value;
+    const dept = document.getElementById("dept");
+    const upload = document.getElementById("uploadDiv");
+    const internal = document.getElementById("internalNames");
+    const external = document.getElementById("externalName");
+
+    if (flow === "Internal") {
+      dept.value = "R&D";
+      upload.style.display = "none";
+      internal.style.display = "block";
+      internal.required = true;
+      external.style.display = "none";
+      external.required = false;
+    } else if (flow === "External") {
+      dept.value = "";
+      upload.style.display = "block";
+      internal.style.display = "none";
+      internal.required = false;
+      external.style.display = "block";
+      external.required = true;
+    }
+  }
+
+  window.onload = function() {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("date").value = today;
+    document.getElementById("externalName").style.display = "none";
+    document.getElementById("uploadDiv").style.display = "none";
+  }
+</script>

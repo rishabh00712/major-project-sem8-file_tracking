@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sign Up</title>
+</head>
+<body>
+
+
+
+<%- include("partials/auth_form", {
+  action: "/signup",
+  fields: ["name","email", "password"],
+  buttonText: "Sign Up"
+}) %>
+
+</body>
+</html>

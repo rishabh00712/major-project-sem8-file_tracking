@@ -1,0 +1,40 @@
+# 🌱 CREATE A NEW BRANCH
+git checkout -b login-page
+# OR (modern way)
+git switch -c login-page
+
+
+# 🔄 SWITCH / NAVIGATE BETWEEN BRANCHES
+git checkout main
+git checkout login-page
+# OR
+git switch main
+git switch login-page
+
+
+# 🔍 LIST ALL BRANCHES
+git branch
+
+
+# 🧹 DELETE A BRANCH (SAFE - only if merged)
+git branch -d login-page
+
+
+# 💥 FORCE DELETE A BRANCH (even if not merged)
+git branch -D login-page
+
+
+# 🌍 CREATE BRANCH FROM ANOTHER BRANCH
+git checkout -b new-feature main
+# OR
+git switch -c new-feature main
+
+
+# 📌 RENAME A BRANCH
+git branch -m old-name new-name
+
+# 1. Go to main branch
+git checkout main
+
+# 2. Merge your branch into main
+git merge login-page

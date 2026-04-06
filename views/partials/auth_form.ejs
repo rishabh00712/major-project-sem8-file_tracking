@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= buttonText %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      width: 100%;
+      background: #eae6de;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    @keyframes formSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fieldFadeIn {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .google-btn {
+      width: 100%;
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #ffffff;
+      border: 1px solid #ddd8ce;
+      border-radius: 2px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: #3c3c3c;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+      text-decoration: none;
+    }
+    .google-btn:hover {
+      background: #faf9f7;
+      border-color: #b8922a;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(184,146,42,0.15);
+    }
+    .google-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: #5a6a7a;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: #b8922a; }
+
+    .field-input {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: #06172e;
+      background: #faf9f7;
+      border: 1px solid #ddd8ce;
+      border-radius: 2px;
+      padding: 10px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field-input:focus {
+      border-color: #b8922a;
+      box-shadow: 0 0 0 3px rgba(184,146,42,0.1);
+      background: #fff;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #d4a843, #b8922a);
+      border: none;
+      color: #06172e;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(184,146,42,0.35);
+    }
+    .submit-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 24px 18px !important; margin: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div style="min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center; background:#eae6de; padding:20px;">
+
+  <div class="auth-card" style="background:#ffffff; border:1px solid rgba(184,146,42,0.18); border-top:3px solid #b8922a; border-radius:2px; padding:40px 44px; width:100%; max-width:460px; box-shadow:0 4px 32px rgba(6,23,46,0.08), 0 1px 4px rgba(6,23,46,0.04); animation:formSlideUp 0.7s cubic-bezier(.4,0,.2,1) 0.2s both;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid #ede8df;">
+      <div style="width:40px; height:40px; background:linear-gradient(135deg,#d4a843,#b8922a); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🔐</div>
+      <div style="font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:#06172e; letter-spacing:0.02em;">
+        <%= buttonText %>
+      </div>
+    </div>
+
+    <form action="<%= action %>" method="POST" style="display:flex; flex-direction:column; gap:18px;">
+
+      <% if(fields.includes("name")){ %>
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.3s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Name <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="text" name="name" placeholder="Enter Name" required class="field-input">
+      </div>
+      <% } %>
+
+      <% if(fields.includes("email")){ %>
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.38s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Email <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="email" name="email" placeholder="Enter Email" required class="field-input">
+      </div>
+      <% } %>
+
+      <% if(fields.includes("password")){ %>
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.46s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Password <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="password" name="password" placeholder="Enter Password" required class="field-input">
+      </div>
+      <% } %>
+
+      <% if(fields.includes("confirmPassword")){ %>
+      <div style="display:flex; flex-direction:column; gap:7px; animation:fieldFadeIn 0.5s ease 0.54s both;">
+        <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
+          Confirm Password <span style="color:#b8922a;">*</span>
+        </label>
+        <input type="password" name="confirmPassword" placeholder="Confirm Password" required class="field-input">
+      </div>
+      <% } %>
+
+      <!-- Submit -->
+      <div style="margin-top:8px; animation:fieldFadeIn 0.5s ease 0.7s both;">
+        <button type="submit" class="submit-btn"><%= buttonText %></button>
+      </div>
+
+    </form>
+
+    <% if(action !== "/forget_password"){ %>
+      <%- include("google_auth") %>
+    <% } %>
+    <!-- Navigation links -->
+    <div style="margin-top:24px; padding-top:20px; border-top:1px solid #ede8df; display:flex; flex-direction:column; gap:10px; animation:fieldFadeIn 0.5s ease 0.8s both;">
+
+      <% if(action !== "/signin"){ %>
+      <a href="/signin" class="nav-link">
+        <span style="color:#b8922a;">→</span> Already have an account? Sign In
+      </a>
+      <% } %>
+
+      <% if(action !== "/signup"){ %>
+      <a href="/signup" class="nav-link">
+        <span style="color:#b8922a;">→</span> Don't have an account? Sign Up
+      </a>
+      <% } %>
+
+      <% if(action !== "/forget_password"){ %>
+      <a href="/forget_password" class="nav-link">
+        <span style="color:#b8922a;">→</span> Forgot your password?
+      </a>
+      <% } %>
+
+      <a href="/" class="nav-link">
+        <span style="color:#b8922a;">←</span> Back to Home
+      </a>
+
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+  @keyframes slideDown {
+    from { opacity:0; transform:translateY(-18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity:0; } to { opacity:1; }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  @keyframes barGrow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
+    50%       { box-shadow: 0 0 0 6px rgba(212,168,67,0); }
+  }
+  @keyframes formSlideUp {
+    from { opacity:0; transform:translateY(-16px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .header-inner {
+      padding: 12px 16px !important;
+      gap: 10px !important;
+    }
+    .header-eyebrow {
+      font-size: 8px !important;
+      letter-spacing: 0.18em !important;
+    }
+    .header-title {
+      font-size: 15px !important;
+    }
+    .header-nav {
+      gap: 6px !important;
+      width: 100% !important;
+    }
+    .nav-btn {
+      padding: 6px 10px !important;
+      font-size: 10px !important;
+      letter-spacing: 0.05em !important;
+    }
+    .logout-btn {
+      padding: 6px 10px !important;
+      font-size: 10px !important;
+      letter-spacing: 0.05em !important;
+    }
+  }
+
+  /* ── TABLET ── */
+  @media (max-width: 768px) {
+    .header-inner {
+      padding: 14px 20px !important;
+      flex-wrap: wrap !important;
+    }
+    .header-nav {
+      gap: 8px !important;
+    }
+    .nav-btn {
+      padding: 8px 14px !important;
+      font-size: 11px !important;
+    }
+    .logout-btn {
+      padding: 8px 14px !important;
+      font-size: 11px !important;
+    }
+  }
+</style>
+</head>
+<body style="margin:0; background:#eae6de;">
+
+<!-- ── HEADER ── -->
+<header style="background:linear-gradient(135deg,#06172e 0%,#0a2340 50%,#0d2d52 100%); font-family:'DM Sans',sans-serif; position:relative; overflow:hidden; animation:fadeIn 0.6s ease both;">
+
+  <!-- grid overlay -->
+  <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(184,146,42,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(184,146,42,0.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none;"></div>
+
+  <!-- radial glow -->
+  <div style="position:absolute; top:-60px; left:-60px; width:320px; height:320px; background:radial-gradient(circle,rgba(184,146,42,0.10) 0%,transparent 70%); pointer-events:none;"></div>
+
+  <!-- top bar -->
+  <div style="height:3px; background:linear-gradient(90deg,#b8922a,#f0c84a,#d4a843,#b8922a); background-size:400px 100%; animation:barGrow 0.8s cubic-bezier(.4,0,.2,1) both, shimmer 3s linear 0.8s infinite; transform-origin:left;"></div>
+
+  <!-- header inner -->
+  <div class="header-inner" style="max-width:1000px; margin:0 auto; padding:18px 36px; display:flex; align-items:center; justify-content:space-between; gap:20px; position:relative; z-index:1; flex-wrap:wrap;">
+
+    <!-- Left -->
+    <div style="display:flex; flex-direction:column; gap:2px; animation:slideDown 0.7s cubic-bezier(.4,0,.2,1) 0.2s both;">
+      <span class="header-eyebrow" style="font-size:10px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase; color:#d4a843; opacity:0.85;">Government of West Bengal</span>
+      <span class="header-title" style="font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:#ffffff; letter-spacing:0.02em; line-height:1.2;">School Education Department</span>
+      <div style="width:40px; height:2px; background:linear-gradient(90deg,#d4a843,transparent); margin-top:5px; border-radius:2px;"></div>
+    </div>
+
+    <!-- Right nav -->
+    <nav class="header-nav" style="display:flex; gap:10px; animation:slideDown 0.7s cubic-bezier(.4,0,.2,1) 0.4s both; flex-wrap:wrap; align-items:center;">
+
+      <!-- File Entry -->
+      <a href="/file_add"
+        class="nav-btn"
+        style="padding:9px 22px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-block; transition:transform 0.18s ease, box-shadow 0.18s ease;
+          background:<%= active==='file_add' ? 'linear-gradient(135deg,#d4a843,#b8922a)' : 'transparent' %>;
+          border:<%= active==='file_add' ? 'none' : '1px solid rgba(184,146,42,0.35)' %>;
+          color:<%= active==='file_add' ? '#06172e' : 'rgba(255,255,255,0.5)' %>;
+          animation:<%= active==='file_add' ? 'pulse-glow 2.5s ease-in-out 1s infinite' : 'none' %>;"
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(212,168,67,0.35)';"
+        onmouseout="this.style.transform=''; this.style.boxShadow='';">
+        File Entry
+      </a>
+
+      <!-- File Search -->
+      <a href="/file_search"
+        class="nav-btn"
+        style="padding:9px 22px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-block; transition:transform 0.18s ease, box-shadow 0.18s ease;
+          background:<%= active==='file_search' ? 'linear-gradient(135deg,#d4a843,#b8922a)' : 'transparent' %>;
+          border:<%= active==='file_search' ? 'none' : '1px solid rgba(184,146,42,0.35)' %>;
+          color:<%= active==='file_search' ? '#06172e' : 'rgba(255,255,255,0.5)' %>;
+          animation:<%= active==='file_search' ? 'pulse-glow 2.5s ease-in-out 1s infinite' : 'none' %>;"
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(212,168,67,0.35)';"
+        onmouseout="this.style.transform=''; this.style.boxShadow='';">
+        File Search
+      </a>
+
+      <!-- Logout -->
+      <a href="#"
+        class="logout-btn"
+        style="padding:9px 18px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-block; transition:transform 0.18s ease, box-shadow 0.18s ease; background:rgba(180,30,30,0.12); border:1px solid rgba(220,60,60,0.45); color:rgba(255,100,100,0.85);"
+        onmouseover="this.style.background='rgba(180,30,30,0.25)'; this.style.borderColor='rgba(220,60,60,0.8)'; this.style.color='#ff7070'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(180,30,30,0.25)';"
+        onmouseout="this.style.background='rgba(180,30,30,0.12)'; this.style.borderColor='rgba(220,60,60,0.45)'; this.style.color='rgba(255,100,100,0.85)'; this.style.transform=''; this.style.boxShadow='';"
+        onclick="document.getElementById('logoutModal').style.display='flex'; return false;">
+        Logout
+      </a>
+
+    </nav>
+  </div>
+
+  <!-- bottom rule -->
+  <div style="height:1px; background:linear-gradient(90deg,transparent,rgba(184,146,42,0.3),transparent); animation:fadeIn 1s ease 0.8s both;"></div>
+
+</header>
+
+<!-- ── LOGOUT MODAL ── -->
+<div id="logoutModal"
+  style="display:none; position:fixed; inset:0; background:rgba(6,23,46,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(3px);"
+  onclick="if(event.target===this) document.getElementById('logoutModal').style.display='none';">
+
+  <div style="background:#ffffff; border-top:3px solid #c0392b; border-radius:2px; padding:32px 28px; width:100%; max-width:360px; margin:20px; box-shadow:0 24px 64px rgba(6,23,46,0.2); font-family:'DM Sans',sans-serif; text-align:center; animation:formSlideUp 0.25s cubic-bezier(.4,0,.2,1) both;">
+
+    <!-- Icon -->
+    <div style="width:52px; height:52px; background:rgba(180,30,30,0.08); border:1px solid rgba(180,30,30,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 16px;">
+      ⎋
+    </div>
+
+    <!-- Title -->
+    <div style="font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:#06172e; margin-bottom:8px;">
+      Confirm Logout
+    </div>
+
+    <!-- Message -->
+    <div style="font-size:13px; color:#5a6a7a; line-height:1.7; margin-bottom:24px;">
+      Are you sure you want to log out? You will need to sign in again to access the system.
+    </div>
+
+    <!-- Buttons -->
+    <div style="display:flex; gap:10px; justify-content:center;">
+
+      <button
+        onclick="document.getElementById('logoutModal').style.display='none';"
+        style="flex:1; padding:11px 16px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; background:transparent; border:1px solid #ddd8ce; color:#8a9aaa; border-radius:2px; cursor:pointer;"
+        onmouseover="this.style.borderColor='#b8922a'; this.style.color='#b8922a';"
+        onmouseout="this.style.borderColor='#ddd8ce'; this.style.color='#8a9aaa';">
+        Cancel
+      </button>
+
+      <a href="/logout"
+        style="flex:1; padding:11px 16px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#c0392b,#922b21); border:none; color:#ffffff; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;"
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(180,30,30,0.35)';"
+        onmouseout="this.style.transform=''; this.style.boxShadow='';">
+        Yes, Logout
+      </a>
+
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

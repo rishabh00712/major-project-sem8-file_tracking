@@ -1,0 +1,124 @@
+<style>
+  @keyframes googleFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .g-divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #ddd8ce);
+  }
+  .g-divider-line.reverse {
+    background: linear-gradient(to left, transparent, #ddd8ce);
+  }
+
+  .google-oauth-btn {
+    width: 100%;
+    padding: 11px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #ffffff;
+    border: 1px solid #ddd8ce;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #3c3c3c;
+    text-decoration: none;
+    transition: background 0.22s ease, border-color 0.22s ease,
+                transform 0.22s ease, box-shadow 0.22s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .google-oauth-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(184,146,42,0.07), transparent);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+  .google-oauth-btn:hover {
+    background: #fdfcfa;
+    border-color: #b8922a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(184,146,42,0.18);
+  }
+  .google-oauth-btn:hover::after {
+    opacity: 1;
+  }
+  .google-oauth-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(184,146,42,0.12);
+  }
+
+  .google-icon-wrap {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .google-btn-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #3c3c3c;
+  }
+
+  .google-badge {
+    margin-left: auto;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #b8922a;
+    border: 1px solid rgba(184,146,42,0.4);
+    border-radius: 2px;
+    padding: 2px 6px;
+    opacity: 0.75;
+  }
+</style>
+
+<div style="animation: googleFadeIn 0.5s ease 0.75s both;">
+
+  <!-- Divider -->
+  <div style="margin: 22px 0 16px; display:flex; align-items:center; gap:12px;">
+    <div class="g-divider-line"></div>
+    <span style="font-size:10px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:#9aa8b4; white-space:nowrap; padding:0 4px;">
+      or continue with
+    </span>
+    <div class="g-divider-line reverse"></div>
+  </div>
+
+  <!-- Google Button -->
+  <a href="/auth/google" class="google-oauth-btn">
+    <!-- Official Google "G" SVG -->
+    <span class="google-icon-wrap">
+      <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="none" d="M0 0h48v48H0z"/>
+      </svg>
+    </span>
+
+    <span class="google-btn-label">Continue with Google</span>
+    <span class="google-badge">Secure</span>
+  </a>
+
+  <!-- Trust note -->
+  <p style="margin-top:10px; font-size:11px; color:#9aa8b4; text-align:center; letter-spacing:0.02em;">
+    🔒 We never post or store your Google password
+  </p>
+
+</div>

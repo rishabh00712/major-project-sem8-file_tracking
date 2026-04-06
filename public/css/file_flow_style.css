@@ -1,0 +1,541 @@
+@keyframes formSlideUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fieldFadeIn {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes rowFadeIn {
+    from { opacity:0; transform:translateX(-8px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+
+  * { box-sizing: border-box; }
+
+  .flow-card {
+    background: #ffffff;
+    border: 1px solid rgba(184,146,42,0.18);
+    border-top: 3px solid #b8922a;
+    border-radius: 2px;
+    padding: 40px 44px;
+    max-width: 960px;
+    margin: 36px auto;
+    box-shadow: 0 4px 32px rgba(6,23,46,0.08), 0 1px 4px rgba(6,23,46,0.04);
+    font-family: 'DM Sans', sans-serif;
+    animation: none;
+  }
+
+  .flow-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ede8df;
+  }
+  .flow-card-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #d4a843, #b8922a);
+    border-radius: 2px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 18px; flex-shrink:0;
+  }
+  .flow-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 700;
+    color: #06172e; letter-spacing: 0.02em;
+  }
+
+  .section-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: #b8922a;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ede8df;
+    margin-bottom: 22px;
+  }
+
+  /* Add Flow Panel */
+  .add-flow-panel {
+    background: #faf9f7;
+    border: 1px solid #ede8df;
+    border-left: 3px solid #b8922a;
+    border-radius: 2px;
+    padding: 28px 32px;
+    margin-top: 28px;
+    display: none;
+    animation: fieldFadeIn 0.4s ease both;
+  }
+  .add-flow-panel.open { display: block; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 28px;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 7px; }
+  .field-group.full { grid-column: 1 / -1; }
+
+  .field-group label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: #5a6a7a;
+  }
+
+  .field-group input[type="text"],
+  .field-group input[type="date"],
+  .field-group input[type="file"],
+  .field-group select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: #06172e;
+    background: #ffffff;
+    border: 1px solid #ddd8ce;
+    border-radius: 2px;
+    padding: 10px 14px;
+    width: 100%; outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    appearance: none; -webkit-appearance: none;
+  }
+  .field-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23b8922a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-color: #ffffff;
+    padding-right: 36px;
+  }
+  .field-group input:focus, .field-group select:focus {
+    border-color: #b8922a;
+    box-shadow: 0 0 0 3px rgba(184,146,42,0.1);
+  }
+  .field-group input::placeholder { color: #b0bbc6; }
+  .field-group input[type="file"] {
+    padding: 7px 14px; cursor: pointer;
+    color: #5a6a7a; font-size: 13px;
+  }
+
+  .form-footer {
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px solid #ede8df;
+    display: flex; justify-content: flex-end;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .btn-reset {
+    padding: 10px 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: transparent;
+    border: 1px solid #ddd8ce; color: #8a9aaa;
+    border-radius: 2px; cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .btn-reset:hover { border-color: #b8922a; color: #b8922a; }
+
+  .btn-submit {
+    padding: 11px 36px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: linear-gradient(135deg, #d4a843, #b8922a);
+    border: none; color: #06172e;
+    border-radius: 2px; cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(184,146,42,0.35); }
+  .btn-submit:active { transform: translateY(0); }
+
+  /* Table wrapper for horizontal scroll on mobile */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .flow-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13.5px; min-width: 700px;
+    animation: fieldFadeIn 0.5s ease 0.5s both;
+  }
+  .flow-table thead tr { background: #06172e; }
+  .flow-table thead th {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: #d4a843; padding: 12px 16px;
+    text-align: left; border: none;
+    white-space: nowrap;
+  }
+  .flow-table tbody tr {
+    border-bottom: 1px solid #ede8df;
+    transition: background 0.15s ease;
+    animation: rowFadeIn 0.4s ease both;
+  }
+  .flow-table tbody tr:hover { background: #faf6ee; }
+  .flow-table tbody td {
+    padding: 13px 16px; color: #06172e;
+    border: none; vertical-align: middle;
+  }
+  .flow-table tbody td:last-child {
+    width: 180px;
+    max-width: 180px;
+    min-width: 180px;
+    vertical-align: top;
+    padding-top: 14px;
+  }
+
+  .flow-table tbody tr.add-row td {
+    padding: 14px 16px;
+    background: #fafaf8;
+  }
+  .flow-table tbody tr.add-row:hover { background: #fafaf8; }
+
+  .flow-badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 20px;
+    white-space: nowrap;
+  }
+  .flow-badge.internal { background: rgba(10,35,64,0.08); color: #0a2340; }
+  .flow-badge.external { background: rgba(184,146,42,0.12); color: #8a6010; }
+
+  .hold-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600;
+    color: #b85010;
+    background: rgba(184,80,16,0.08);
+    border: 1px solid rgba(184,80,16,0.2);
+    border-radius: 2px; padding: 3px 10px;
+    white-space: nowrap;
+  }
+
+  .hold-desc {
+    font-size: 12px; color: #8a6a50;
+    margin-top: 4px; font-style: italic;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+
+  .btn-hold {
+    padding: 7px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: #d4742a; border: none; color: #fff;
+    border-radius: 2px; cursor: pointer;
+    transition: all 0.18s ease; white-space: nowrap;
+  }
+  .btn-hold:hover { background: #b85010; }
+
+  .btn-cancel-hold {
+    padding: 7px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: transparent;
+    border: 1px solid rgba(184,80,16,0.3); color: #b85010;
+    border-radius: 2px; cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .btn-cancel-hold:hover { background: rgba(184,80,16,0.06); }
+
+  .btn-view {
+    padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: transparent;
+    border: 1px solid rgba(184,146,42,0.3); color: #b8922a;
+    border-radius: 2px; cursor: pointer;
+    transition: all 0.18s ease; text-decoration: none;
+    display: inline-block; white-space: nowrap;
+  }
+  .btn-view:hover { background: rgba(184,146,42,0.08); border-color: #b8922a; }
+
+  .btn-add {
+    padding: 10px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: linear-gradient(135deg, #d4a843, #b8922a);
+    border: none; color: #06172e;
+    border-radius: 2px; cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184,146,42,0.3); }
+
+  .hold-active-notice {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600;
+    color: #b85010; letter-spacing: 0.04em;
+    background: rgba(184,80,16,0.06);
+    border: 1px solid rgba(184,80,16,0.2);
+    border-radius: 2px; padding: 8px 16px;
+  }
+
+  /* ── HOLD MODAL ── */
+  .hold-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6,23,46,0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .hold-modal-overlay.open { display: flex; }
+
+  .hold-modal {
+    background: #fff;
+    border-top: 3px solid #d4742a;
+    border-radius: 2px;
+    padding: 36px 40px;
+    width: 100%;
+    max-width: 480px;
+    margin: 20px;
+    box-shadow: 0 20px 60px rgba(6,23,46,0.18);
+    animation: formSlideUp 0.3s cubic-bezier(.4,0,.2,1) both;
+  }
+  .hold-modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 700;
+    color: #06172e; margin-bottom: 4px;
+  }
+  .hold-modal-sub {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: #b8922a; margin-bottom: 24px;
+  }
+  .hold-modal label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: #5a6a7a; display: block; margin-bottom: 8px;
+  }
+  .hold-modal textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: #06172e;
+    background: #fff;
+    border: 1px solid #ddd8ce;
+    border-radius: 2px;
+    padding: 12px 14px;
+    width: 100%; outline: none;
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hold-modal textarea:focus {
+    border-color: #d4742a;
+    box-shadow: 0 0 0 3px rgba(212,116,42,0.1);
+  }
+  .hold-modal textarea::placeholder { color: #b0bbc6; }
+  .hold-modal-footer {
+    display: flex; justify-content: flex-end;
+    gap: 10px; margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #ede8df;
+  }
+
+  /* ── CUSTOM CONFIRM DIALOG ── */
+  .confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6,23,46,0.6);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: #fff;
+    border-top: 3px solid #b8922a;
+    border-radius: 2px;
+    padding: 36px 40px;
+    width: 100%; max-width: 380px;
+    margin: 20px;
+    box-shadow: 0 20px 60px rgba(6,23,46,0.2);
+    animation: formSlideUp 0.25s cubic-bezier(.4,0,.2,1) both;
+    text-align: center;
+  }
+  .confirm-icon {
+    width: 52px; height: 52px;
+    background: rgba(184,80,16,0.08);
+    border: 1px solid rgba(184,80,16,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin: 0 auto 16px;
+  }
+  .confirm-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 700;
+    color: #06172e; margin-bottom: 10px;
+  }
+  .confirm-msg {
+    font-size: 13px; color: #5a6a7a;
+    line-height: 1.7; margin-bottom: 28px;
+  }
+  .confirm-footer {
+    display: flex; gap: 10px; justify-content: center;
+  }
+  .confirm-footer .btn-reset { flex: 1; }
+  .confirm-footer .btn-hold { flex: 1; padding: 10px 18px; font-size: 12px; }
+
+  /* Cancel hold confirm */
+  .cancel-confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6,23,46,0.6);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .cancel-confirm-overlay.open { display: flex; }
+/* Remove the body display:none you have at bottom — replace with this */
+
+/* ── TABLET ── */
+@media (max-width: 768px) {
+  .flow-card {
+    padding: 28px 20px;
+    margin: 16px 12px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .field-group.full {
+    grid-column: 1 / -1;
+  }
+  .form-footer {
+    justify-content: stretch;
+  }
+  .form-footer .btn-reset,
+  .form-footer .btn-submit {
+    flex: 1;
+  }
+  .hold-modal {
+    padding: 28px 24px;
+  }
+  .confirm-box {
+    padding: 28px 24px;
+  }
+}
+
+/* ── MOBILE ── */
+@media (max-width: 480px) {
+  /* body display:none removed */
+  body {
+    display: block;
+  }
+
+  .flow-card {
+    padding: 20px 14px;
+    margin: 10px 8px;
+  }
+
+  .flow-card-title {
+    font-size: 16px;
+  }
+
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+
+  /* table horizontal scroll */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .flow-table {
+    min-width: 620px;
+    font-size: 12px;
+  }
+
+  .flow-table thead th {
+    padding: 10px 12px;
+    font-size: 9px;
+  }
+
+  .flow-table tbody td {
+    padding: 10px 12px;
+  }
+
+  .flow-table tbody td:last-child {
+    min-width: 160px;
+    max-width: 160px;
+    width: 160px;
+  }
+
+  /* form grid single column */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .field-group label {
+    font-size: 10px;
+  }
+
+  .add-flow-panel {
+    padding: 16px 12px;
+  }
+
+  /* footer buttons stacked */
+  .form-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .form-footer .btn-reset,
+  .form-footer .btn-submit {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* add button full width */
+  .btn-add {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .hold-active-notice {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+
+  /* modals */
+  .hold-modal {
+    padding: 24px 18px;
+    margin: 12px;
+  }
+  .hold-modal-title {
+    font-size: 18px;
+  }
+  .hold-modal-footer {
+    flex-direction: column;
+  }
+  .hold-modal-footer .btn-reset,
+  .hold-modal-footer .btn-hold {
+    width: 100%;
+    text-align: center;
+  }
+
+  .confirm-box {
+    padding: 24px 18px;
+    margin: 12px;
+  }
+  .confirm-footer {
+    flex-direction: column;
+  }
+  .confirm-footer .btn-reset,
+  .confirm-footer .btn-hold {
+    width: 100%;
+  }
+}

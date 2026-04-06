@@ -1,0 +1,291 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<style>
+  @keyframes formSlideUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fieldFadeIn {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes rowFadeIn {
+    from { opacity:0; transform:translateX(-8px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+
+  * { box-sizing: border-box; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .search-card { padding: 28px 20px !important; margin: 16px 12px !important; }
+    .detail-grid { grid-template-columns: 1fr 1fr !important; }
+    .filter-bar { gap: 8px !important; flex-wrap: wrap !important; }
+  }
+
+  @media (max-width: 480px) {
+    .search-card { padding: 20px 14px !important; margin: 10px 8px !important; }
+    .detail-grid { grid-template-columns: 1fr !important; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .file-table { min-width: 500px; }
+    .filter-bar { gap: 6px !important; }
+    .filter-btn { padding: 6px 12px !important; font-size: 10px !important; }
+    .search-card-title { font-size: 17px !important; }
+    .header-inner { flex-direction: column !important; align-items: flex-start !important; padding: 14px 16px !important; }
+    .header-right { width: 100% !important; justify-content: flex-start !important; }
+    .header-title { font-size: 16px !important; }
+    .header-eyebrow { font-size: 9px !important; }
+  }
+</style>
+
+<!-- MAIN CARD -->
+
+<div class="search-card" style="background:#ffffff; border:1px solid rgba(184,146,42,0.18); border-top:3px solid #b8922a; border-radius:2px; padding:40px 44px; max-width:900px; margin:36px auto; box-shadow:0 4px 32px rgba(6,23,46,0.08), 0 1px 4px rgba(6,23,46,0.04); font-family:'DM Sans',sans-serif; animation:formSlideUp 0.7s cubic-bezier(.4,0,.2,1) 0.2s both;">
+
+ 
+
+  <!-- Search Input -->
+  <div style="position:relative; margin-bottom:16px; animation:fieldFadeIn 0.5s ease 0.4s both;">
+    <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:15px; color:#b8922a; pointer-events:none;">⌕</span>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search by docket number…"
+      onkeyup="filterAll()"
+      style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:11px 14px 11px 40px; width:100%; outline:none;"
+      onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+      onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';"
+    />
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar" style="display:flex; align-items:center; gap:10px; margin-bottom:24px; flex-wrap:wrap; animation:fieldFadeIn 0.5s ease 0.45s both;">
+
+    <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa; flex-shrink:0;">Filter:</span>
+
+    <button class="filter-btn" id="filter-all" onclick="setFilter('all')"
+      style="padding:7px 16px; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; background:#06172e; border:1px solid #06172e; color:#d4a843; border-radius:2px; cursor:pointer;">
+      All
+    </button>
+
+    <button class="filter-btn" id="filter-bill" onclick="setFilter('bill')"
+      style="padding:7px 16px; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; background:transparent; border:1px solid rgba(184,146,42,0.3); color:#8a6010; border-radius:2px; cursor:pointer;"
+      onmouseover="this.style.background='rgba(184,146,42,0.08)';"
+      onmouseout="if(activeFilter!=='bill') this.style.background='transparent';">
+      📄 Bills &amp; Invoices
+    </button>
+
+    <button class="filter-btn" id="filter-letter" onclick="setFilter('letter')"
+      style="padding:7px 16px; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; background:transparent; border:1px solid rgba(42,100,160,0.3); color:#1a4a7a; border-radius:2px; cursor:pointer;"
+      onmouseover="this.style.background='rgba(42,100,160,0.08)';"
+      onmouseout="if(activeFilter!=='letter') this.style.background='transparent';">
+      ✉ Letters
+    </button>
+
+  </div>
+
+  <!-- Table wrap for mobile scroll -->
+  <div class="table-wrap">
+    <table class="file-table" id="fileTable" style="width:100%; border-collapse:collapse; font-size:13.5px; animation:fieldFadeIn 0.5s ease 0.5s both;">
+      <thead>
+        <tr style="background:#06172e;">
+          <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Docket Number</th>
+          <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Project Code</th>
+          <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Date</th>
+          <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Subject</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+      <% files.forEach(function(file, i){ %>
+
+        <tr class="data-row"
+          id="row-<%=i%>"
+          data-subject="<%=file.subject%>"
+          onclick="toggleDetails(<%=i%>)"
+          style="cursor:pointer; border-bottom:1px solid #ede8df; transition:background 0.15s ease; animation:rowFadeIn 0.4s ease both; animation-delay:<%=0.1+i*0.06%>s;"
+          onmouseover="if(document.getElementById('details-<%=i%>').style.display!=='table-row') this.style.background='#faf6ee';"
+          onmouseout="if(document.getElementById('details-<%=i%>').style.display!=='table-row') this.style.background='';">
+
+          <td style="padding:13px 16px; color:#06172e; border:none; vertical-align:middle;">
+            <span class="docket" style="display:inline-block; font-weight:700; font-size:12px; letter-spacing:0.08em; color:#b8922a; background:rgba(184,146,42,0.08); border:1px solid rgba(184,146,42,0.2); border-radius:2px; padding:3px 10px; white-space:nowrap;">
+              <%=file.docket_number%>
+            </span>
+          </td>
+
+          <td style="padding:13px 16px; color:#06172e; border:none; vertical-align:middle; font-weight:500;">
+            <%=file.project_code%>
+          </td>
+
+          <td style="padding:13px 16px; border:none; vertical-align:middle; color:#8a9aaa; white-space:nowrap;">
+            <%=new Date(file.date).toLocaleDateString('en-GB')%>
+          </td>
+
+          <td style="padding:13px 16px; border:none; vertical-align:middle;">
+            <!-- Letter = blue, Bills/Invoice = gold -->
+            <span style="display:inline-block; font-size:11px; font-weight:600; letter-spacing:0.06em; padding:3px 10px; border-radius:20px; white-space:nowrap;
+              background:<%=file.subject==='Letter' ? 'rgba(42,100,184,0.12)' : 'rgba(184,146,42,0.12)'%>;
+              color:<%=file.subject==='Letter' ? '#1a4a8a' : '#8a6010'%>;">
+              <%=file.subject%>
+            </span>
+          </td>
+
+        </tr>
+
+        <!-- Detail Row -->
+        <tr id="details-<%=i%>" style="display:none;">
+          <td colspan="4" style="background:#f7f4ef; border-bottom:1px solid #ede8df; padding:0; border:none;">
+            <div class="detail-grid" style="padding:20px 20px 20px 24px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 24px; border-left:3px solid #b8922a; margin:0 16px 12px; border-radius:0 0 2px 2px;">
+
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">Department</span>
+                <span style="font-size:13px; color:#06172e; font-weight:500;"><%=file.department%></span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">PI Name</span>
+                <span style="font-size:13px; color:#06172e; font-weight:500;"><%=file.pi_name%></span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">Email</span>
+                <span style="font-size:13px; color:#06172e; font-weight:500; word-break:break-all;"><%=file.email%></span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:3px; grid-column:1/-1;">
+                <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">Description</span>
+                <span style="font-size:13px; color:#06172e; font-weight:500;"><%=file.description || "—"%></span>
+              </div>
+
+              <% if(file.pay_amount){ %>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">Pay Amount</span>
+                <span style="font-size:13px; color:#06172e; font-weight:500;">₹ <%=file.pay_amount%></span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">Payable Name</span>
+                <span style="font-size:13px; color:#06172e; font-weight:500;"><%=file.payable_name%></span>
+              </div>
+              <% } %>
+
+              <div style="display:flex; flex-direction:column; gap:3px; grid-column:1/-1; margin-top:4px;">
+                <a href="/file_flow?docket=<%=file.docket_number%>"
+                  style="display:inline-flex; align-items:center; gap:6px; padding:9px 22px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#d4a843,#b8922a); border:none; color:#06172e; border-radius:2px; cursor:pointer; text-decoration:none;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(184,146,42,0.35)';"
+                  onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                  ↗ File Flow
+                </a>
+              </div>
+
+            </div>
+          </td>
+        </tr>
+
+      <% }) %>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyState" style="display:none; text-align:center; padding:48px 0; color:#b0bbc6; font-size:13px;">
+    <div style="font-size:32px; margin-bottom:10px;">🗂️</div>
+    No files match your search
+  </div>
+
+</div>
+
+<script>
+  let activeFilter = "all";
+
+  const BILL_SUBJECTS = ["Tax Invoice", "Payable Bill", "Bill"];
+
+  function setFilter(type) {
+    activeFilter = type;
+
+    // update button styles
+    const allBtn    = document.getElementById("filter-all");
+    const billBtn   = document.getElementById("filter-bill");
+    const letterBtn = document.getElementById("filter-letter");
+
+    // reset all
+    allBtn.style.background    = "transparent";
+    allBtn.style.border        = "1px solid rgba(6,23,46,0.2)";
+    allBtn.style.color         = "#06172e";
+    billBtn.style.background   = "transparent";
+    billBtn.style.border       = "1px solid rgba(184,146,42,0.3)";
+    billBtn.style.color        = "#8a6010";
+    letterBtn.style.background = "transparent";
+    letterBtn.style.border     = "1px solid rgba(42,100,160,0.3)";
+    letterBtn.style.color      = "#1a4a7a";
+
+    // highlight active
+    if(type === "all"){
+      allBtn.style.background = "#06172e";
+      allBtn.style.border     = "1px solid #06172e";
+      allBtn.style.color      = "#d4a843";
+    } else if(type === "bill"){
+      billBtn.style.background = "rgba(184,146,42,0.15)";
+      billBtn.style.border     = "1px solid #b8922a";
+      billBtn.style.color      = "#8a6010";
+    } else if(type === "letter"){
+      letterBtn.style.background = "rgba(42,100,184,0.12)";
+      letterBtn.style.border     = "1px solid #2a64b8";
+      letterBtn.style.color      = "#1a4a7a";
+    }
+
+    filterAll();
+  }
+
+  function filterAll() {
+    const search = document.getElementById("searchInput").value.toUpperCase();
+    const rows   = document.querySelectorAll("#fileTable .data-row");
+    let visibleCount = 0;
+
+    rows.forEach(function(row) {
+      const docket  = row.querySelector(".docket").innerText.toUpperCase();
+      const subject = row.getAttribute("data-subject") || "";
+      const index   = row.id.replace("row-", "");
+      const detail  = document.getElementById("details-" + index);
+
+      // search match
+      const matchSearch = docket.includes(search);
+
+      // filter match
+      let matchFilter = true;
+      if(activeFilter === "bill"){
+        matchFilter = BILL_SUBJECTS.includes(subject);
+      } else if(activeFilter === "letter"){
+        matchFilter = subject === "Letter";
+      }
+
+      if(matchSearch && matchFilter){
+        row.style.display = "";
+        visibleCount++;
+      } else {
+        row.style.display = "none";
+        if(detail) detail.style.display = "none";
+      }
+    });
+
+    document.getElementById("emptyState").style.display = visibleCount === 0 ? "block" : "none";
+  }
+
+  function toggleDetails(i) {
+    const detail = document.getElementById("details-" + i);
+    const isOpen = detail.style.display === "table-row";
+
+    document.querySelectorAll(".data-row").forEach(r => r.style.background = "");
+    document.querySelectorAll("[id^='details-']").forEach(r => r.style.display = "none");
+
+    if(!isOpen){
+      detail.style.display = "table-row";
+      document.getElementById("row-" + i).style.background = "#faf6ee";
+    }
+  }
+</script>
