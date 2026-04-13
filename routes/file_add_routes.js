@@ -19,8 +19,6 @@ const transporter = nodemailer.createTransport({
 router.get("/file_add", isAuth, async (req, res) => {
   res.render("file_add", { active: "file_add" });
 });
-
-// POST: Add file
 router.post("/file_add", async (req, res) => {
   try {
     const {
@@ -67,6 +65,25 @@ router.post("/file_add", async (req, res) => {
       ]
     );
 
+    // ── Auto insert into file_flow ──
+    const isLetter = subject.toLowerCase().includes("letter");
+    const flowName = isLetter ? "Ranadeep Dhara" : "Sudip Das";
+
+    await pool.query(
+      `INSERT INTO file_flow 
+      (docket_number, flow, name, department, date, subject, image_file)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        docket_number,
+        "Internal",
+        flowName,
+        "R&C",
+        date,
+        "The file is submitted",
+        null
+      ]
+    );
+
     // ── Format date ──
     const formattedDate = new Date(date).toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -76,13 +93,13 @@ router.post("/file_add", async (req, res) => {
 
     // ── Send plain text email ──
     const mailOptions = {
-      from: '"School Education Department" <rishabhgarai7@gmail.com>',
+      from: '"Research and Consultancy Cell of IIEST Shibpur" <rishabhgarai7@gmail.com>',
       to: email,
       subject: `File Submitted — Docket No. ${docket_number}`,
-      text: 
+      text:
 `Hello ${pi_name},
 
-Your file has been successfully submitted to the School Education Department.
+Your file has been successfully submitted to the R&C Cell.
 
 Subject  : ${subject}
 Date     : ${formattedDate}
@@ -95,8 +112,8 @@ http://localhost:5000/view_flow
 
 If you have any questions, please contact the department directly.
 
-— School Education Department
-Government of West Bengal`
+— Research and Consultancy Cell
+Indian Institute of Engineering Science and Technology, Shibpur`
     };
 
     // Send async — don't block redirect

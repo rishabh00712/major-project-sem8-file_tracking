@@ -30,12 +30,12 @@ router.post("/view_flow", async (req, res) => {
       [docket.trim()]
     );
 
-    // if (check.rows.length === 0) {
-    //   return res.render("docket_search", {
-    //     active: "",
-    //     error: `No records found for docket: ${docket.trim()}`
-    //   });
-    // }
+    if (check.rows.length === 0) {
+      return res.render("docket_search", {
+        active: "",
+        error: `No records found for docket: ${docket.trim()}`
+      });
+    }
 
     return res.redirect(`/file_flow_viewer?docket=${encodeURIComponent(docket.trim())}`);
 
@@ -64,12 +64,12 @@ router.get("/file_flow_viewer", async (req, res) => {
       [docket]
     );
 
-    // if (result.rows.length === 0) {
-    //   return res.render("docket_search", {
-    //     active: "",
-    //     error: `No records found for docket: ${docket}`
-    //   });
-    // }
+    if (result.rows.length === 0) {
+      return res.render("docket_search", {
+        active: "",
+        error: `No records found for docket: ${docket}`
+      });
+    }
 
     return res.render("file_flow", {
       docket_number: docket,
