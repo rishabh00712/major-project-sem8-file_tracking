@@ -30,6 +30,121 @@
     from { opacity:0; transform:translateY(-16px) scale(0.97); }
     to   { opacity:1; transform:translateY(0) scale(1); }
   }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+  @keyframes barFlow {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+  }
+  @keyframes dotBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40%           { transform: translateY(-8px); opacity: 1; }
+  }
+
+  /* ── NAV LOADING OVERLAY ── */
+  #navLoadingOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #eae6de;
+    z-index: 9998;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+  #navLoadingOverlay.show {
+    display: flex;
+  }
+  .nl-card {
+    background: #fff;
+    border-radius: 2px;
+    padding: 56px 44px;
+    width: 100%;
+    max-width: 420px;
+    margin: 16px;
+    box-shadow: 0 4px 32px rgba(6,23,46,0.08);
+    animation: formSlideUp 0.4s cubic-bezier(.4,0,.2,1) both;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+  .nl-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #d4a843, #b8922a);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .nl-title { text-align: center; }
+  .nl-title h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #06172e;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  .nl-title p {
+    font-size: 12px;
+    color: #8a9aaa;
+    letter-spacing: 0.03em;
+  }
+  .nl-track {
+    width: 100%;
+    height: 3px;
+    background: #ede8df;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .nl-bar {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: 30%;
+    background: linear-gradient(90deg, #b8922a, #f0c84a, #d4a843);
+    border-radius: 2px;
+    animation: barFlow 1.6s ease-in-out infinite;
+  }
+  .nl-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .nl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d4a843;
+    animation: dotBounce 1.2s ease-in-out infinite;
+  }
+  .nl-dot:nth-child(1) { animation-delay: 0s; }
+  .nl-dot:nth-child(2) { animation-delay: 0.2s; }
+  .nl-dot:nth-child(3) { animation-delay: 0.4s; }
+  .nl-status {
+    font-size: 12px;
+    color: #8a9aaa;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .nl-divider {
+    width: 100%;
+    height: 1px;
+    background: #ede8df;
+  }
+  .nl-footer {
+    font-size: 11px;
+    color: #b0bac5;
+    text-align: center;
+    line-height: 1.6;
+  }
 
   /* ── AUTO-HIDE HEADER ── */
   header {
@@ -39,78 +154,58 @@
                 border-bottom 0.3s ease;
     will-change: transform;
   }
-
   header.header--hidden {
     transform: translateY(-110%) !important;
     opacity: 0 !important;
     pointer-events: none;
   }
+  body { padding-top: 80px; }
 
-  body {
-    padding-top: 80px;
-  }
-
-  /* ── MOBILE ── */
   @media (max-width: 480px) {
-    .header-inner {
-      padding: 12px 16px !important;
-      gap: 10px !important;
-    }
-    .header-eyebrow {
-      font-size: 8px !important;
-      letter-spacing: 0.18em !important;
-    }
-    .header-title {
-      font-size: 15px !important;
-    }
-    .header-nav {
-      gap: 6px !important;
-      width: 100% !important;
-    }
-    .nav-btn {
-      padding: 6px 10px !important;
-      font-size: 10px !important;
-      letter-spacing: 0.05em !important;
-    }
-    .logout-btn {
-      padding: 6px 10px !important;
-      font-size: 10px !important;
-      letter-spacing: 0.05em !important;
-    }
-    .back-btn {
-      padding: 6px 12px !important;
-      font-size: 10px !important;
-    }
-    body {
-      padding-top: 120px;
-    }
+    .header-inner { padding: 12px 16px !important; gap: 10px !important; }
+    .header-eyebrow { font-size: 8px !important; letter-spacing: 0.18em !important; }
+    .header-title { font-size: 15px !important; }
+    .header-nav { gap: 6px !important; width: 100% !important; }
+    .nav-btn { padding: 6px 10px !important; font-size: 10px !important; letter-spacing: 0.05em !important; }
+    .logout-btn { padding: 6px 10px !important; font-size: 10px !important; letter-spacing: 0.05em !important; }
+    .back-btn { padding: 6px 12px !important; font-size: 10px !important; }
+    body { padding-top: 120px; }
   }
-
-  /* ── TABLET ── */
   @media (max-width: 768px) {
-    .header-inner {
-      padding: 14px 20px !important;
-      flex-wrap: wrap !important;
-    }
-    .header-nav {
-      gap: 8px !important;
-    }
-    .nav-btn {
-      padding: 8px 14px !important;
-      font-size: 11px !important;
-    }
-    .logout-btn {
-      padding: 8px 14px !important;
-      font-size: 11px !important;
-    }
-    .back-btn {
-      padding: 8px 16px !important;
-      font-size: 11px !important;
-    }
+    .header-inner { padding: 14px 20px !important; flex-wrap: wrap !important; }
+    .header-nav { gap: 8px !important; }
+    .nav-btn { padding: 8px 14px !important; font-size: 11px !important; }
+    .logout-btn { padding: 8px 14px !important; font-size: 11px !important; }
+    .back-btn { padding: 8px 16px !important; font-size: 11px !important; }
   }
 </style>
 </head>
 <body style="margin:0; background:#eae6de;">
+
+<!-- ── NAV LOADING OVERLAY ── -->
+<div id="navLoadingOverlay">
+  <div class="nl-card">
+    <div class="nl-icon">⏳</div>
+    <div class="nl-title">
+      <h1>Please Wait</h1>
+      <p>Loading your page...</p>
+    </div>
+    <div class="nl-track">
+      <div class="nl-bar"></div>
+    </div>
+    <div class="nl-dots">
+      <div class="nl-dot"></div>
+      <div class="nl-dot"></div>
+      <div class="nl-dot"></div>
+    </div>
+    <div class="nl-status">Loading...</div>
+    <div class="nl-divider"></div>
+    <div class="nl-footer">
+      Research and Consultancy Cell<br>
+      Indian Institute of Engineering Science and Technology, Shibpur
+    </div>
+  </div>
+</div>
 
 <header id="siteHeader" style="background:linear-gradient(135deg,#06172e 0%,#0a2340 50%,#0d2d52 100%); font-family:'DM Sans',sans-serif; position:fixed; top:0; left:0; right:0; z-index:1000; overflow:hidden; animation:fadeIn 0.6s ease both;">
 
@@ -142,7 +237,6 @@
       %>
 
       <% if (_isViewer) { %>
-        <!-- VIEWER MODE: Back button only -->
         <a href="/view_flow"
           class="back-btn"
           style="padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:7px; transition:transform 0.18s ease, box-shadow 0.18s ease; background:rgba(212,168,67,0.10); border:1px solid rgba(212,168,67,0.4); color:rgba(212,168,67,0.9);"
@@ -152,11 +246,9 @@
         </a>
 
       <% } else if (!_isDockerSearch) { %>
-        <!-- ADMIN MODE: full nav -->
 
-        <!-- File Entry -->
         <a href="/file_add"
-          class="nav-btn"
+          class="nav-btn nav-link"
           style="padding:9px 22px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-block; transition:transform 0.18s ease, box-shadow 0.18s ease;
             background:<%= typeof active !== 'undefined' && active==='file_add' ? 'linear-gradient(135deg,#d4a843,#b8922a)' : 'transparent' %>;
             border:<%= typeof active !== 'undefined' && active==='file_add' ? 'none' : '1px solid rgba(184,146,42,0.35)' %>;
@@ -167,9 +259,8 @@
           File Entry
         </a>
 
-        <!-- File Search -->
         <a href="/file_search"
-          class="nav-btn"
+          class="nav-btn nav-link"
           style="padding:9px 22px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-block; transition:transform 0.18s ease, box-shadow 0.18s ease;
             background:<%= typeof active !== 'undefined' && active==='file_search' ? 'linear-gradient(135deg,#d4a843,#b8922a)' : 'transparent' %>;
             border:<%= typeof active !== 'undefined' && active==='file_search' ? 'none' : '1px solid rgba(184,146,42,0.35)' %>;
@@ -180,7 +271,6 @@
           File Search
         </a>
 
-        <!-- Logout -->
         <a href="#"
           class="logout-btn"
           style="padding:9px 18px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-block; transition:transform 0.18s ease, box-shadow 0.18s ease; background:rgba(180,30,30,0.12); border:1px solid rgba(220,60,60,0.45); color:rgba(255,100,100,0.85);"
@@ -191,17 +281,15 @@
         </a>
 
       <% } %>
-      <!-- docker_search true = no buttons rendered at all -->
 
     </nav>
   </div>
 
-  <!-- bottom rule -->
   <div style="height:1px; background:linear-gradient(90deg,transparent,rgba(184,146,42,0.3),transparent); animation:fadeIn 1s ease 0.8s both;"></div>
 
 </header>
 
-<!-- ── LOGOUT MODAL: only for admin mode ── -->
+<!-- ── LOGOUT MODAL ── -->
 <% if (!_isViewer && !_isDockerSearch) { %>
 <div id="logoutModal"
   style="display:none; position:fixed; inset:0; background:rgba(6,23,46,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(3px);"
@@ -209,20 +297,15 @@
 
   <div style="background:#ffffff; border-top:3px solid #c0392b; border-radius:2px; padding:32px 28px; width:100%; max-width:360px; margin:20px; box-shadow:0 24px 64px rgba(6,23,46,0.2); font-family:'DM Sans',sans-serif; text-align:center; animation:formSlideUp 0.25s cubic-bezier(.4,0,.2,1) both;">
 
-    <div style="width:52px; height:52px; background:rgba(180,30,30,0.08); border:1px solid rgba(180,30,30,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 16px;">
-      ⎋
-    </div>
+    <div style="width:52px; height:52px; background:rgba(180,30,30,0.08); border:1px solid rgba(180,30,30,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 16px;">⎋</div>
 
-    <div style="font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:#06172e; margin-bottom:8px;">
-      Confirm Logout
-    </div>
+    <div style="font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:#06172e; margin-bottom:8px;">Confirm Logout</div>
 
     <div style="font-size:13px; color:#5a6a7a; line-height:1.7; margin-bottom:24px;">
       Are you sure you want to log out? You will need to sign in again to access the system.
     </div>
 
     <div style="display:flex; gap:10px; justify-content:center;">
-
       <button
         onclick="document.getElementById('logoutModal').style.display='none';"
         style="flex:1; padding:11px 16px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; background:transparent; border:1px solid #ddd8ce; color:#8a9aaa; border-radius:2px; cursor:pointer;"
@@ -230,20 +313,34 @@
         onmouseout="this.style.borderColor='#ddd8ce'; this.style.color='#8a9aaa';">
         Cancel
       </button>
-
       <a href="/logout"
         style="flex:1; padding:11px 16px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#c0392b,#922b21); border:none; color:#ffffff; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;"
         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(180,30,30,0.35)';"
         onmouseout="this.style.transform=''; this.style.boxShadow='';">
         Yes, Logout
       </a>
-
     </div>
   </div>
 </div>
 <% } %>
 
 <script>
+  // ── Nav loading overlay ──
+  document.querySelectorAll('.nav-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      var href = this.getAttribute('href');
+      // Don't show for current active page
+      if (window.location.pathname === href) return;
+      e.preventDefault();
+      var overlay = document.getElementById('navLoadingOverlay');
+      overlay.classList.add('show');
+      setTimeout(function() {
+        window.location.href = href;
+      }, 300); // small delay so overlay renders before navigation
+    });
+  });
+
+  // ── Auto-hide header on scroll ──
   (function () {
     var header    = document.getElementById('siteHeader');
     var hideTimer = null;
@@ -265,29 +362,20 @@
       clearTimeout(hideTimer);
       hideTimer = setTimeout(function () {
         showHeader();
-      }, 1000); /* ← change ms here to adjust the idle delay */
+      }, 1000);
     }
 
     window.addEventListener('scroll', function () {
       var scrollY = window.scrollY || window.pageYOffset;
-
-      /* Always visible when at the very top */
       if (scrollY <= 10) {
         clearTimeout(hideTimer);
         showHeader();
         return;
       }
-
-      /* Hide immediately on any scroll */
       hideHeader();
-
-      /* Restart the 3-second idle countdown */
       resetIdleTimer();
-
-      /* Dynamic shadow depth based on scroll position */
       header.style.boxShadow    = '0 ' + Math.min(scrollY * 0.05, 8) + 'px ' + Math.min(scrollY * 0.2, 40) + 'px rgba(0,0,0,' + Math.min(scrollY * 0.001, 0.4) + ')';
       header.style.borderBottom = '1px solid rgba(212,168,67,0.15)';
-
     }, { passive: true });
 
   })();

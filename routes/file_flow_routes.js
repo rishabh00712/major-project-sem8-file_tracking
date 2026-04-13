@@ -40,146 +40,240 @@ router.get("/file_flow", async (req, res) => {
 /* ================= POST: ADD FLOW ================= */
 router.post(
   "/file_flow",
-  upload.single("file"),   // 🔥 matches your input name="file"
+  upload.single("file"),
   async (req, res) => {
+    const io         = req.app.get("io");
+    const { docket } = req.query;
+
+    // ── Capture all body fields before setTimeout ──
+    const { file_flow, name, department, date, subject } = req.body;
+
+    // ── Capture file before setTimeout ──
+    const uploadedFile = req.file || null;
+
     try {
-      const { docket } = req.query;
+      const jobId = `addflow_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-      const {
-        file_flow,
-        name,
-        department,
-        date,
-        subject
-      } = req.body;
+      res.render("loading_email", { jobId });
 
+      setTimeout(async () => {
+        try {
 
-     let imageUrl = null;
+          // STEP 1: Upload image if exists
+          io.to(jobId).emit("job:progress", { jobId, step: "db" });
+          await new Promise(r => setTimeout(r, 500));
 
-// 🔥 DEBUG
-console.log("FILE RECEIVED:", req.file);
+          let imageUrl = null;
 
-if (req.file && req.file.path) {
+          if (uploadedFile && uploadedFile.path) {
 
-  // ✅ Check image type
-  if (!req.file.mimetype.startsWith("image/")) {
-    fs.unlinkSync(req.file.path);
-    return res.send("Only image files are allowed");
-  }
+            if (!uploadedFile.mimetype.startsWith("image/")) {
+              fs.unlinkSync(uploadedFile.path);
+              return io.to(jobId).emit("job:error", {
+                jobId,
+                message: "Only image files are allowed.",
+                redirect: `/file_flow?docket=${docket}`
+              });
+            }
 
-  try {
-    // 🔥 Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "file_flow_images"
-    });
+            try {
+              const result = await cloudinary.uploader.upload(uploadedFile.path, {
+                folder: "file_flow_images"
+              });
+              imageUrl = result.secure_url;
+              console.log("UPLOADED URL:", imageUrl);
+            } catch (err) {
+              console.error("Cloudinary Error:", err);
+              return io.to(jobId).emit("job:error", {
+                jobId,
+                message: "Image upload failed. Please try again.",
+                redirect: `/file_flow?docket=${docket}`
+              });
+            }
 
-    imageUrl = result.secure_url;
+            fs.unlinkSync(uploadedFile.path);
 
-    console.log("UPLOADED URL:", imageUrl);
+          } else {
+            console.log("⚠️ No file uploaded");
+          }
 
-  } catch (err) {
-    console.error("Cloudinary Error:", err);
-    return res.send("Image upload failed");
-  }
+          // STEP 2: Encrypting data
+          io.to(jobId).emit("job:progress", { jobId, step: "encrypt" });
+          await new Promise(r => setTimeout(r, 500));
 
-  // 🔥 Delete temp file
-  fs.unlinkSync(req.file.path);
+          let finalName = "";
+          if (Array.isArray(name)) {
+            finalName = name.find(n => n && n.trim() !== "");
+          } else if (typeof name === "object" && name !== null) {
+            finalName = Object.keys(name)[0];
+          } else {
+            finalName = name;
+          }
 
-} else {
-  console.log("⚠️ No file uploaded");
-}
-        let finalName = "";
+          // STEP 3: Save to DB
+          io.to(jobId).emit("job:progress", { jobId, step: "flow" });
+          await new Promise(r => setTimeout(r, 500));
 
-        // 🔥 If it's array → pick correct value
-        if (Array.isArray(name)) {
-        finalName = name.find(n => n && n.trim() !== "");
+          await pool.query(
+            `INSERT INTO file_flow 
+            (docket_number, flow, name, department, date, subject, image_file)
+            VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+            [
+              docket,
+              file_flow,
+              finalName,
+              department,
+              date,
+              subject || null,
+              imageUrl
+            ]
+          );
+
+          // STEP 4: Finalizing
+          io.to(jobId).emit("job:progress", { jobId, step: "email" });
+          await new Promise(r => setTimeout(r, 400));
+
+          // ── DONE ──
+          io.to(jobId).emit("job:done", {
+            jobId,
+            redirect: `/file_flow?docket=${docket}`
+          });
+
+        } catch (err) {
+          console.error("Add flow async error:", err);
+          io.to(jobId).emit("job:error", {
+            jobId,
+            message: "Something went wrong saving flow.",
+            redirect: `/file_flow?docket=${docket}`
+          });
         }
-
-        // 🔥 If it's object → take key
-        else if (typeof name === "object" && name !== null) {
-        finalName = Object.keys(name)[0];
-        }
-
-        // 🔥 If it's normal string
-        else {
-        finalName = name;
-        }
-      // 🔥 4. Insert into DB
-      await pool.query(
-        `INSERT INTO file_flow 
-        (docket_number, flow, name, department, date, subject, image_file)
-        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-        [
-          docket,
-          file_flow,
-          finalName,
-          department,
-          date,
-          subject || null,
-          imageUrl // can be null
-        ]
-      );
-
-      // 🔥 5. Redirect back
-      return res.redirect(`/file_flow?docket=${docket}`);
+      }, 1200);
 
     } catch (err) {
       console.error(err);
-      return res.send("Error saving file flow");
+      res.send("Error saving file flow");
     }
   }
 );
 
-// ================= HOLD =================
+/* ================= POST: HOLD ================= */
 router.post("/hold/:id", async (req, res) => {
+  const io          = req.app.get("io");
+  const { docket }  = req.query;
+  const id          = parseInt(req.params.id);
+  const description = req.body.description || "";
+
   try {
-    const { docket } = req.query;
-    const id = parseInt(req.params.id);
+    const jobId = `hold_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-    // 🔥 update hold = true
-    await pool.query(
-      `UPDATE file_flow
-       SET hold = true,
-           hold_desc = $1
-       WHERE id = $2 AND docket_number = $3`,
-      [
-        req.body.description || "",
-        id,
-        docket
-      ]
-    );
+    res.render("loading_email", { jobId });
 
-    return res.redirect(`/file_flow?docket=${docket}`);
+    setTimeout(async () => {
+      try {
+
+        // STEP 1: Finding record
+        io.to(jobId).emit("job:progress", { jobId, step: "db" });
+        await new Promise(r => setTimeout(r, 500));
+
+        // STEP 2: Applying hold
+        io.to(jobId).emit("job:progress", { jobId, step: "encrypt" });
+        await new Promise(r => setTimeout(r, 500));
+
+        await pool.query(
+          `UPDATE file_flow
+           SET hold = true,
+               hold_desc = $1
+           WHERE id = $2 AND docket_number = $3`,
+          [description, id, docket]
+        );
+
+        // STEP 3: Saving record
+        io.to(jobId).emit("job:progress", { jobId, step: "flow" });
+        await new Promise(r => setTimeout(r, 500));
+
+        // STEP 4: Finalizing
+        io.to(jobId).emit("job:progress", { jobId, step: "email" });
+        await new Promise(r => setTimeout(r, 400));
+
+        // ── DONE ──
+        io.to(jobId).emit("job:done", {
+          jobId,
+          redirect: `/file_flow?docket=${docket}`
+        });
+
+      } catch (err) {
+        console.error("Hold async error:", err);
+        io.to(jobId).emit("job:error", {
+          jobId,
+          message: "Something went wrong applying hold.",
+          redirect: `/file_flow?docket=${docket}`
+        });
+      }
+    }, 1200);
 
   } catch (err) {
     console.error(err);
-    return res.send("Error applying hold");
+    res.send("Error applying hold");
   }
 });
 
-// ================= CANCEL HOLD =================
+/* ================= POST: CANCEL HOLD ================= */
 router.post("/cancel-hold/:id", async (req, res) => {
-  try {
-    const { docket } = req.query;
-    const id = parseInt(req.params.id);
-    
-    // 🔥 update hold = false
-    await pool.query(
-      `UPDATE file_flow
-       SET hold = false,
-           hold_desc = ''
-       WHERE id = $1 AND docket_number = $2`,
-      [
-        id,
-        docket
-      ]
-    );
+  const io         = req.app.get("io");
+  const { docket } = req.query;
+  const id         = parseInt(req.params.id);
 
-    return res.redirect(`/file_flow?docket=${docket}`);
+  try {
+    const jobId = `cancelhold_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+    res.render("loading_email", { jobId });
+
+    setTimeout(async () => {
+      try {
+
+        // STEP 1: Finding record
+        io.to(jobId).emit("job:progress", { jobId, step: "db" });
+        await new Promise(r => setTimeout(r, 500));
+
+        // STEP 2: Removing hold
+        io.to(jobId).emit("job:progress", { jobId, step: "encrypt" });
+        await new Promise(r => setTimeout(r, 500));
+
+        await pool.query(
+          `UPDATE file_flow
+           SET hold = false,
+               hold_desc = ''
+           WHERE id = $1 AND docket_number = $2`,
+          [id, docket]
+        );
+
+        // STEP 3: Saving record
+        io.to(jobId).emit("job:progress", { jobId, step: "flow" });
+        await new Promise(r => setTimeout(r, 500));
+
+        // STEP 4: Finalizing
+        io.to(jobId).emit("job:progress", { jobId, step: "email" });
+        await new Promise(r => setTimeout(r, 400));
+
+        // ── DONE ──
+        io.to(jobId).emit("job:done", {
+          jobId,
+          redirect: `/file_flow?docket=${docket}`
+        });
+
+      } catch (err) {
+        console.error("Cancel hold async error:", err);
+        io.to(jobId).emit("job:error", {
+          jobId,
+          message: "Something went wrong canceling hold.",
+          redirect: `/file_flow?docket=${docket}`
+        });
+      }
+    }, 1200);
 
   } catch (err) {
     console.error(err);
-    return res.send("Error canceling hold");
+    res.send("Error canceling hold");
   }
 });
 

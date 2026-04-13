@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Processing...</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: #eae6de;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    @keyframes checkPop {
+      0%   { transform: scale(0); opacity: 0; }
+      70%  { transform: scale(1.3); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 2px;
+      padding: 48px 44px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 4px 32px rgba(6,23,46,0.08);
+      animation: fadeIn 0.5s cubic-bezier(.4,0,.2,1) both;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 32px 20px; margin: 16px; }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ede8df;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #d4a843, #b8922a);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #06172e;
+      letter-spacing: 0.02em;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: #8a9aaa;
+      margin-top: 2px;
+    }
+
+    .progress-track {
+      background: #ede8df;
+      border-radius: 2px;
+      height: 4px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #b8922a, #f0c84a, #d4a843);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0.35;
+      transition: opacity 0.3s ease;
+    }
+    .step.active { opacity: 1; }
+    .step.done   { opacity: 1; }
+
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #ddd8ce;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: #8a9aaa;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .step.active .step-dot {
+      border-color: #d4a843;
+      background: rgba(212,168,67,0.08);
+    }
+    .step.done .step-dot {
+      border-color: #2e7d32;
+      background: #e6f4ea;
+    }
+
+    .dot-spinner {
+      display: none;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(212,168,67,0.3);
+      border-top-color: #d4a843;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .step.active .dot-spinner { display: block; }
+
+    .check-icon {
+      display: none;
+      color: #2e7d32;
+      font-size: 13px;
+      animation: checkPop 0.3s cubic-bezier(.4,0,.2,1) both;
+    }
+    .step.done .check-icon  { display: block; }
+    .step.done .dot-spinner { display: none; }
+    .step.done .step-num    { display: none; }
+    .step.active .step-num  { display: none; }
+    .step:not(.active):not(.done) .step-num { display: block; }
+
+    .step-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a2332;
+    }
+    .step-desc {
+      font-size: 11px;
+      color: #8a9aaa;
+    }
+
+    .status-msg {
+      text-align: center;
+      font-size: 12px;
+      color: #8a9aaa;
+      letter-spacing: 0.04em;
+      animation: pulse 1.8s ease-in-out infinite;
+      min-height: 18px;
+      transition: color 0.3s;
+    }
+
+    .done-banner {
+      display: none;
+      text-align: center;
+      padding: 16px;
+      background: #e6f4ea;
+      border: 1px solid #c8e6c9;
+      border-radius: 2px;
+      margin-top: 8px;
+    }
+    .done-banner.show { display: block; }
+    .done-banner p    { font-size: 13px; color: #2e7d32; font-weight: 600; }
+    .done-banner span { font-size: 11px; color: #5a6a7a; }
+
+    .error-banner {
+      display: none;
+      text-align: center;
+      padding: 16px;
+      background: #fff0f0;
+      border: 1px solid #f5c6c6;
+      border-radius: 2px;
+      margin-top: 8px;
+    }
+    .error-banner.show { display: block; }
+    .error-banner p    { font-size: 13px; color: #c0392b; font-weight: 600; }
+    .error-banner span { font-size: 11px; color: #5a6a7a; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="card-header">
+    <div class="card-icon" id="cardIcon">⏳</div>
+    <div>
+      <div class="card-title" id="cardTitle">Processing</div>
+      <div class="card-sub">Please wait, do not close this tab</div>
+    </div>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="steps">
+
+    <div class="step" id="step-db">
+      <div class="step-dot">
+        <span class="step-num">1</span>
+        <div class="dot-spinner"></div>
+        <span class="check-icon">✓</span>
+      </div>
+      <div class="step-text">
+        <span class="step-label" id="label-db">Checking Database</span>
+        <span class="step-desc" id="desc-db">Verifying records</span>
+      </div>
+    </div>
+
+    <div class="step" id="step-encrypt">
+      <div class="step-dot">
+        <span class="step-num">2</span>
+        <div class="dot-spinner"></div>
+        <span class="check-icon">✓</span>
+      </div>
+      <div class="step-text">
+        <span class="step-label" id="label-encrypt">Encrypting Data</span>
+        <span class="step-desc" id="desc-encrypt">Securing your information</span>
+      </div>
+    </div>
+
+    <div class="step" id="step-flow">
+      <div class="step-dot">
+        <span class="step-num">3</span>
+        <div class="dot-spinner"></div>
+        <span class="check-icon">✓</span>
+      </div>
+      <div class="step-text">
+        <span class="step-label" id="label-flow">Saving Record</span>
+        <span class="step-desc" id="desc-flow">Storing data securely</span>
+      </div>
+    </div>
+
+    <div class="step" id="step-email">
+      <div class="step-dot">
+        <span class="step-num">4</span>
+        <div class="dot-spinner"></div>
+        <span class="check-icon">✓</span>
+      </div>
+      <div class="step-text">
+        <span class="step-label" id="label-email">Sending Email</span>
+        <span class="step-desc" id="desc-email">Delivering confirmation to recipient</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="status-msg" id="statusMsg">Connecting to server...</div>
+
+  <div class="done-banner" id="doneBanner">
+    <p id="doneMsg">✓ Done!</p>
+    <span>Redirecting you now...</span>
+  </div>
+
+  <div class="error-banner" id="errorBanner">
+    <p id="errorMsg">⚠ Something went wrong.</p>
+    <span>Redirecting you back...</span>
+  </div>
+
+</div>
+
+<script>
+  const socket = io();
+  const jobId  = '<%= jobId %>';
+
+  // ── Detect context from jobId prefix ──
+  const isSignup      = jobId.startsWith('signup_');
+  const isSignin      = jobId.startsWith('signin_');
+  const isReset       = jobId.startsWith('reset_');
+  const isFileAdd     = jobId.startsWith('fileadd_');
+  const isHold        = jobId.startsWith('hold_');
+  const isCancelHold  = jobId.startsWith('cancelhold_');
+  const isAddFlow     = jobId.startsWith('addflow_');
+
+  // ── Set titles and step labels based on context ──
+  const cardTitle = document.getElementById('cardTitle');
+  const cardIcon  = document.getElementById('cardIcon');
+
+  if (isSignup) {
+    cardTitle.textContent = 'Creating Your Account';
+    cardIcon.textContent  = '👤';
+    document.getElementById('label-db').textContent      = 'Checking Account';
+    document.getElementById('desc-db').textContent       = 'Verifying email is not taken';
+    document.getElementById('label-encrypt').textContent = 'Securing Password';
+    document.getElementById('desc-encrypt').textContent  = 'Hashing your password';
+    document.getElementById('label-flow').textContent    = 'Generating OTP';
+    document.getElementById('desc-flow').textContent     = 'Preparing verification code';
+    document.getElementById('label-email').textContent   = 'Sending Email';
+    document.getElementById('desc-email').textContent    = 'Delivering OTP to your inbox';
+
+  } else if (isSignin) {
+    cardTitle.textContent = 'Signing You In';
+    cardIcon.textContent  = '🔐';
+    document.getElementById('label-db').textContent      = 'Finding Account';
+    document.getElementById('desc-db').textContent       = 'Looking up your email';
+    document.getElementById('label-encrypt').textContent = 'Verifying Password';
+    document.getElementById('desc-encrypt').textContent  = 'Checking your credentials';
+    document.getElementById('label-flow').textContent    = 'Creating Session';
+    document.getElementById('desc-flow').textContent     = 'Logging you in securely';
+    document.getElementById('label-email').textContent   = 'Finalizing';
+    document.getElementById('desc-email').textContent    = 'Almost done...';
+
+  } else if (isReset) {
+    cardTitle.textContent = 'Resetting Password';
+    cardIcon.textContent  = '🔑';
+    document.getElementById('label-db').textContent      = 'Verifying Account';
+    document.getElementById('desc-db').textContent       = 'Checking email exists';
+    document.getElementById('label-encrypt').textContent = 'Securing Password';
+    document.getElementById('desc-encrypt').textContent  = 'Hashing your new password';
+    document.getElementById('label-flow').textContent    = 'Generating OTP';
+    document.getElementById('desc-flow').textContent     = 'Preparing reset code';
+    document.getElementById('label-email').textContent   = 'Sending Email';
+    document.getElementById('desc-email').textContent    = 'Delivering OTP to your inbox';
+
+  } else if (isFileAdd) {
+    cardTitle.textContent = 'Submitting Your File';
+    cardIcon.textContent  = '📋';
+    document.getElementById('label-db').textContent      = 'Saving to Database';
+    document.getElementById('desc-db').textContent       = 'Storing file record securely';
+    document.getElementById('label-encrypt').textContent = 'Encrypting Data';
+    document.getElementById('desc-encrypt').textContent  = 'Securing your file information';
+    document.getElementById('label-flow').textContent    = 'Initialising File Flow';
+    document.getElementById('desc-flow').textContent     = 'Setting up tracking record';
+    document.getElementById('label-email').textContent   = 'Sending Email';
+    document.getElementById('desc-email').textContent    = 'Delivering confirmation to recipient';
+
+  } else if (isHold) {
+    cardTitle.textContent = 'Applying Hold';
+    cardIcon.textContent  = '⏸️';
+    document.getElementById('label-db').textContent      = 'Finding Record';
+    document.getElementById('desc-db').textContent       = 'Locating file in database';
+    document.getElementById('label-encrypt').textContent = 'Applying Hold';
+    document.getElementById('desc-encrypt').textContent  = 'Updating hold status';
+    document.getElementById('label-flow').textContent    = 'Saving Changes';
+    document.getElementById('desc-flow').textContent     = 'Storing updated record';
+    document.getElementById('label-email').textContent   = 'Finalizing';
+    document.getElementById('desc-email').textContent    = 'Almost done...';
+
+  } else if (isCancelHold) {
+    cardTitle.textContent = 'Removing Hold';
+    cardIcon.textContent  = '▶️';
+    document.getElementById('label-db').textContent      = 'Finding Record';
+    document.getElementById('desc-db').textContent       = 'Locating file in database';
+    document.getElementById('label-encrypt').textContent = 'Removing Hold';
+    document.getElementById('desc-encrypt').textContent  = 'Clearing hold status';
+    document.getElementById('label-flow').textContent    = 'Saving Changes';
+    document.getElementById('desc-flow').textContent     = 'Storing updated record';
+    document.getElementById('label-email').textContent   = 'Finalizing';
+    document.getElementById('desc-email').textContent    = 'Almost done...';
+
+  } else if (isAddFlow) {
+    cardTitle.textContent = 'Saving File Flow';
+    cardIcon.textContent  = '📁';
+    document.getElementById('label-db').textContent      = 'Uploading Image';
+    document.getElementById('desc-db').textContent       = 'Processing your file';
+    document.getElementById('label-encrypt').textContent = 'Preparing Data';
+    document.getElementById('desc-encrypt').textContent  = 'Validating fields';
+    document.getElementById('label-flow').textContent    = 'Saving to Database';
+    document.getElementById('desc-flow').textContent     = 'Storing flow record';
+    document.getElementById('label-email').textContent   = 'Finalizing';
+    document.getElementById('desc-email').textContent    = 'Almost done...';
+  }
+
+  // ── Step config ──
+  const steps = {
+    db:      { el: document.getElementById('step-db'),      progress: 25, msg: 'Checking database...' },
+    encrypt: { el: document.getElementById('step-encrypt'), progress: 50, msg: 'Processing...' },
+    flow:    { el: document.getElementById('step-flow'),    progress: 75, msg: 'Saving record...' },
+    email:   { el: document.getElementById('step-email'),   progress: 90, msg: 'Finalizing...' },
+  };
+
+  const progressFill = document.getElementById('progressFill');
+  const statusMsg    = document.getElementById('statusMsg');
+  const doneBanner   = document.getElementById('doneBanner');
+  const errorBanner  = document.getElementById('errorBanner');
+  const doneMsg      = document.getElementById('doneMsg');
+  const errorMsg     = document.getElementById('errorMsg');
+
+  let currentStep = null;
+  let jobTimeout  = null;
+
+  function setProgress(pct) {
+    progressFill.style.width = pct + '%';
+  }
+
+  function activateStep(key) {
+    if (currentStep) {
+      steps[currentStep].el.classList.remove('active');
+      steps[currentStep].el.classList.add('done');
+    }
+    currentStep = key;
+    steps[key].el.classList.add('active');
+    setProgress(steps[key].progress);
+    statusMsg.textContent = steps[key].msg;
+  }
+
+  // ── Connection timeout (5 seconds) ──
+  const connectionTimeout = setTimeout(() => {
+    if (!socket.connected) {
+      socket.disconnect();
+      statusMsg.style.animation = 'none';
+      statusMsg.textContent = '';
+      errorMsg.textContent = '⚠ Connection timed out. Please try again.';
+      errorBanner.classList.add('show');
+      setTimeout(() => { window.location.href = '/'; }, 3000);
+    }
+  }, 5000);
+
+  // ── Socket events ──
+  socket.on('connect', () => {
+    clearTimeout(connectionTimeout);
+    statusMsg.textContent = 'Connected. Processing...';
+    socket.emit('job:subscribe', { jobId });
+
+    // ── Job timeout (30 seconds) ──
+    jobTimeout = setTimeout(() => {
+      statusMsg.style.animation = 'none';
+      statusMsg.textContent = '';
+      errorMsg.textContent = '⚠ Request timed out. Please try again.';
+      errorBanner.classList.add('show');
+      setTimeout(() => { window.location.href = '/'; }, 3000);
+    }, 30000);
+  });
+
+  socket.on('job:progress', (data) => {
+    if (data.jobId !== jobId) return;
+    if (data.step) activateStep(data.step);
+  });
+
+  socket.on('job:done', (data) => {
+    if (data.jobId !== jobId) return;
+    clearTimeout(jobTimeout);
+
+    Object.keys(steps).forEach(k => {
+      steps[k].el.classList.remove('active');
+      steps[k].el.classList.add('done');
+    });
+
+    setProgress(100);
+    statusMsg.style.animation = 'none';
+    statusMsg.textContent = '';
+
+    if (isSignup)          doneMsg.textContent = '✓ Account created! Check your email for OTP.';
+    else if (isSignin)     doneMsg.textContent = '✓ Signed in successfully!';
+    else if (isReset)      doneMsg.textContent = '✓ OTP sent! Check your email.';
+    else if (isFileAdd)    doneMsg.textContent = '✓ File submitted successfully!';
+    else if (isHold)       doneMsg.textContent = '✓ Hold applied successfully!';
+    else if (isCancelHold) doneMsg.textContent = '✓ Hold removed successfully!';
+    else if (isAddFlow)    doneMsg.textContent = '✓ Flow entry saved successfully!';
+    else                   doneMsg.textContent = '✓ Done!';
+
+    doneBanner.classList.add('show');
+    setTimeout(() => { window.location.href = data.redirect || '/'; }, 2000);
+  });
+
+  socket.on('job:error', (data) => {
+    if (data.jobId !== jobId) return;
+    clearTimeout(jobTimeout);
+
+    statusMsg.style.animation = 'none';
+    statusMsg.textContent = '';
+
+    errorMsg.textContent = '⚠ ' + (data.message || 'Something went wrong.');
+    errorBanner.classList.add('show');
+    setTimeout(() => { window.location.href = data.redirect || '/'; }, 3000);
+  });
+
+  socket.on('disconnect', () => {
+    statusMsg.style.animation = 'none';
+    statusMsg.style.color = '#c0392b';
+    statusMsg.textContent = '⚠ Connection lost. Please try again.';
+  });
+</script>
+
+</body>
+</html>

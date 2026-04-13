@@ -9,7 +9,7 @@ const isAuth = require("./middleware/auth"); // ✅ import middleware
 router.get("/file_search", isAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM files ORDER BY date DESC"
+      "SELECT * FROM files ORDER BY docket_number DESC"
     );
 
     res.render("file_search", {

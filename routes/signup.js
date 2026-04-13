@@ -4,81 +4,108 @@ const bcrypt = require("bcrypt");
 const db = require("../config/db");
 const nodemailer = require("nodemailer");
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  secure: true,
+  port: 465,
+  auth: {
+    user: "rishabhgarai7@gmail.com",
+    pass: "xgabndbrcfwliisj"
+  }
+});
+
 // ✅ GET: show signup page
 router.get("/signup", (req, res) => {
-  if (req.session.user) {
-    return res.redirect("/file_add");
-  }
+  if (req.session.user) return res.redirect("/file_add");
   res.render("sign_up");
 });
 
-
-// ✅ POST: Signup → Generate OTP + Send Email
+// ✅ POST: Signup → socket loading screen → OTP
 router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
+  const io = req.app.get("io");
 
   try {
-    // check existing user
-    const check = await db.query(
-      "SELECT * FROM store_emails WHERE email = $1",
-      [email]
-    );
+    const jobId = `signup_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-    if (check.rows.length > 0) {
-      return res.render("sign_up", {
-        error: "User already exists",
-      });
-    }
+    // Render loading screen immediately
+    res.render("loading_email", { jobId });
 
-    // hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    setTimeout(async () => {
+      try {
+        // STEP 1: Check existing user
+        io.to(jobId).emit("job:progress", { jobId, step: "db" });
+        await new Promise(r => setTimeout(r, 500));
 
-    // ✅ Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    console.log("OTP:", otp);
+        const check = await db.query(
+          "SELECT * FROM store_emails WHERE email = $1",
+          [email]
+        );
 
-    // ✅ Send OTP via email (same as your old code)
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      secure: true,
-      port: 465,
-      auth: {
-        user: "rishabhgarai7@gmail.com",
-        pass: "xgabndbrcfwliisj" // ⚠️ move to env later
-      }
-    });
+        if (check.rows.length > 0) {
+          return io.to(jobId).emit("job:error", {
+            jobId,
+            message: "An account with this email already exists.",
+            redirect: "/signup"
+          });
+        }
 
-    const mailOptions = {
-      from: "rishabhgarai7@gmail.com",
-      to: email,
-      subject: "Your OTP Code",
-      text: `Your OTP code is: ${otp}`
-    };
+        // STEP 2: Hash password
+        io.to(jobId).emit("job:progress", { jobId, step: "encrypt" });
+        await new Promise(r => setTimeout(r, 500));
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    transporter.sendMail(mailOptions, async (error, info) => {
-      if (error) {
-        console.log("Error sending OTP:", error);
-        return res.render("sign_up", {
-          error: "Failed to send OTP. Try again."
+        // STEP 3: Generate OTP
+        io.to(jobId).emit("job:progress", { jobId, step: "flow" });
+        await new Promise(r => setTimeout(r, 500));
+
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        console.log("OTP:", otp);
+
+        if (!global._signupTemp) global._signupTemp = {};
+        global._signupTemp[jobId] = { name, email, password: hashedPassword, otp };
+
+        setTimeout(() => {
+          if (global._signupTemp) delete global._signupTemp[jobId];
+        }, 10 * 60 * 1000);
+
+        // STEP 4: Send OTP email
+        io.to(jobId).emit("job:progress", { jobId, step: "email" });
+        await new Promise(r => setTimeout(r, 400));
+
+        const mailOptions = {
+          from: '"Research and Consultancy Cell of IIEST Shibpur" <rishabhgarai7@gmail.com>',
+          to: email,
+          subject: "Your OTP Code — IIEST R&C Cell",
+          text:
+`Hello ${name},
+
+Your OTP code for signup is: ${otp}
+
+This OTP is valid for 10 minutes. Do not share it with anyone.
+
+— Research and Consultancy Cell
+Indian Institute of Engineering Science and Technology, Shibpur`
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log("OTP sent to:", email);
+
+        // ── DONE ──
+        io.to(jobId).emit("job:done", {
+          jobId,
+          redirect: `/signup/otp?jobId=${jobId}&email=${encodeURIComponent(email)}`
+        });
+
+      } catch (err) {
+        console.error("Signup async error:", err);
+        io.to(jobId).emit("job:error", {
+          jobId,
+          message: "Something went wrong. Please try again.",
+          redirect: "/signup"
         });
       }
-
-      console.log("OTP sent:", info.response);
-
-      // ✅ Store in session
-      req.session.signupData = {
-        name,
-        email,
-        password: hashedPassword,
-        otp
-      };
-
-      // 👉 Redirect to OTP page
-      return res.render("otp_update", {
-        action: "/signup/verify",
-        email: email
-      });
-    });
+    },800);
 
   } catch (err) {
     console.error(err);
@@ -86,6 +113,22 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+// ✅ GET: OTP page
+router.get("/signup/otp", (req, res) => {
+  const { jobId, email } = req.query;
+
+  if (!jobId || !global._signupTemp || !global._signupTemp[jobId]) {
+    return res.redirect("/signup");
+  }
+
+  req.session.signupData = global._signupTemp[jobId];
+  delete global._signupTemp[jobId];
+
+  return res.render("otp_update", {
+    action: "/signup/verify",
+    email: email
+  });
+});
 
 // ✅ POST: VERIFY OTP → FINAL SAVE
 router.post("/signup/verify", async (req, res) => {
@@ -99,14 +142,11 @@ router.post("/signup/verify", async (req, res) => {
 
   const data = req.session.signupData;
 
-  if (!data) {
-    return res.redirect("/signup");
-  }
+  if (!data) return res.redirect("/signup");
 
   console.log("Entered OTP:", enteredOtp);
   console.log("Expected OTP:", data.otp);
 
-  // ❌ wrong OTP
   if (enteredOtp !== data.otp.toString()) {
     return res.render("otp_update", {
       action: "/signup/verify",
@@ -116,17 +156,13 @@ router.post("/signup/verify", async (req, res) => {
   }
 
   try {
-    // ✅ Save user in DB
     await db.query(
       "INSERT INTO store_emails (name, email, password) VALUES ($1, $2, $3)",
       [data.name, data.email, data.password]
     );
 
     console.log("User registered:", data.email);
-
-    // ✅ clear session
     req.session.signupData = null;
-
     res.redirect("/signin");
 
   } catch (err) {
