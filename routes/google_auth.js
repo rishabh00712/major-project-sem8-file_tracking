@@ -18,8 +18,8 @@ passport.use(new GoogleStrategy({
       const email = profile.emails?.[0]?.value;
       const name = profile.displayName;
 
-      console.log("📧 Email:", email);
-      console.log("👤 Name:", name);
+      //console.log("📧 Email:", email);
+      //console.log("👤 Name:", name);
 
       if (!email) {
         console.log("❌ No email found in profile");
@@ -37,7 +37,7 @@ passport.use(new GoogleStrategy({
         console.log("✅ Existing user found");
         return done(null, result.rows[0]);
       } else {
-        console.log("🆕 Creating new user");
+        //console.log("🆕 Creating new user");
 
         const newUser = await db.query(
           "INSERT INTO store_emails (name, email, password) VALUES ($1,$2,$3) RETURNING *",
@@ -64,14 +64,14 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    console.log("🔄 deserializeUser ID:", id);
+    //console.log("🔄 deserializeUser ID:", id);
 
     const result = await db.query(
       "SELECT * FROM store_emails WHERE id=$1",
       [id]
     );
 
-   console.log("👤 User loaded from DB:");
+   //console.log("👤 User loaded from DB:");
 
     done(null, result.rows[0]);
   } catch (err) {
@@ -86,15 +86,22 @@ passport.deserializeUser(async (id, done) => {
 router.get("/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
-
 // 👉 callback
 router.get("/google/callback",
   passport.authenticate("google", {
     failureRedirect: "/signin"
   }),
   (req, res) => {
-    console.log("🎉 LOGIN SUCCESS:");
-    res.redirect("/file_add"); // 👈 change here if needed
+    //console.log("🎉 LOGIN SUCCESS:");
+    
+    // ✅ Mirror into session.user so isAuth works
+    req.session.user = {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email
+    };
+
+    res.redirect("/file_add");
   }
 );
 

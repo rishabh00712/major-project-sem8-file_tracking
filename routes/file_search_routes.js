@@ -5,7 +5,7 @@ const router = express.Router();
 const pool = require("../config/db");
 const isAuth = require("./middleware/auth");
 
-const ROWS_PER_PAGE = 10;
+const ROWS_PER_PAGE = 20;
 
 // ✅ GET file search page (default: page 1)
 router.get("/file_search", isAuth, async (req, res) => {
@@ -20,7 +20,7 @@ router.get("/file_search", isAuth, async (req, res) => {
 
     // Fetch only the rows for this page
     const result = await pool.query(
-      "SELECT * FROM files ORDER BY docket_number DESC LIMIT $1 OFFSET $2",
+      "SELECT * FROM files ORDER BY date DESC LIMIT $1 OFFSET $2",
       [ROWS_PER_PAGE, offset]
     );
 
