@@ -54,9 +54,8 @@
     justify-content: center;
     font-family: 'DM Sans', sans-serif;
   }
-  #navLoadingOverlay.show {
-    display: flex;
-  }
+  #navLoadingOverlay.show { display: flex; }
+
   .nl-card {
     background: #fff;
     border-radius: 2px;
@@ -80,6 +79,9 @@
     align-items: center;
     justify-content: center;
     font-size: 24px;
+  }
+  .nl-icon.logout-icon {
+    background: linear-gradient(135deg, #c0392b, #922b21);
   }
   .nl-title { text-align: center; }
   .nl-title h1 {
@@ -112,6 +114,9 @@
     border-radius: 2px;
     animation: barFlow 1.6s ease-in-out infinite;
   }
+  .nl-bar.logout-bar {
+    background: linear-gradient(90deg, #c0392b, #e74c3c, #c0392b);
+  }
   .nl-dots {
     display: flex;
     gap: 8px;
@@ -124,6 +129,7 @@
     background: #d4a843;
     animation: dotBounce 1.2s ease-in-out infinite;
   }
+  .nl-dot.logout-dot { background: #c0392b; }
   .nl-dot:nth-child(1) { animation-delay: 0s; }
   .nl-dot:nth-child(2) { animation-delay: 0.2s; }
   .nl-dot:nth-child(3) { animation-delay: 0.4s; }
@@ -184,21 +190,21 @@
 
 <!-- ── NAV LOADING OVERLAY ── -->
 <div id="navLoadingOverlay">
-  <div class="nl-card">
-    <div class="nl-icon">⏳</div>
+  <div class="nl-card" id="nlCard">
+    <div class="nl-icon" id="nlIcon">⏳</div>
     <div class="nl-title">
-      <h1>Please Wait</h1>
-      <p>Loading your page...</p>
+      <h1 id="nlTitle">Please Wait</h1>
+      <p id="nlSubtitle">Loading your page...</p>
     </div>
     <div class="nl-track">
-      <div class="nl-bar"></div>
+      <div class="nl-bar" id="nlBar"></div>
     </div>
     <div class="nl-dots">
-      <div class="nl-dot"></div>
-      <div class="nl-dot"></div>
-      <div class="nl-dot"></div>
+      <div class="nl-dot" id="nlDot1"></div>
+      <div class="nl-dot" id="nlDot2"></div>
+      <div class="nl-dot" id="nlDot3"></div>
     </div>
-    <div class="nl-status">Loading...</div>
+    <div class="nl-status" id="nlStatus">Loading...</div>
     <div class="nl-divider"></div>
     <div class="nl-footer">
       Research and Consultancy Cell<br>
@@ -238,7 +244,7 @@
 
       <% if (_isViewer) { %>
         <a href="/view_flow"
-          class="back-btn"
+          class="back-btn nav-link"
           style="padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:7px; transition:transform 0.18s ease, box-shadow 0.18s ease; background:rgba(212,168,67,0.10); border:1px solid rgba(212,168,67,0.4); color:rgba(212,168,67,0.9);"
           onmouseover="this.style.background='rgba(212,168,67,0.2)'; this.style.borderColor='rgba(212,168,67,0.8)'; this.style.color='#d4a843'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(212,168,67,0.20)';"
           onmouseout="this.style.background='rgba(212,168,67,0.10)'; this.style.borderColor='rgba(212,168,67,0.4)'; this.style.color='rgba(212,168,67,0.9)'; this.style.transform=''; this.style.boxShadow='';">
@@ -271,12 +277,13 @@
           File Search
         </a>
 
+        <!-- Logout button — now triggers loading overlay -->
         <a href="#"
           class="logout-btn"
+          id="logoutTrigger"
           style="padding:9px 18px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-block; transition:transform 0.18s ease, box-shadow 0.18s ease; background:rgba(180,30,30,0.12); border:1px solid rgba(220,60,60,0.45); color:rgba(255,100,100,0.85);"
           onmouseover="this.style.background='rgba(180,30,30,0.25)'; this.style.borderColor='rgba(220,60,60,0.8)'; this.style.color='#ff7070'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(180,30,30,0.25)';"
-          onmouseout="this.style.background='rgba(180,30,30,0.12)'; this.style.borderColor='rgba(220,60,60,0.45)'; this.style.color='rgba(255,100,100,0.85)'; this.style.transform=''; this.style.boxShadow='';"
-          onclick="document.getElementById('logoutModal').style.display='flex'; return false;">
+          onmouseout="this.style.background='rgba(180,30,30,0.12)'; this.style.borderColor='rgba(220,60,60,0.45)'; this.style.color='rgba(255,100,100,0.85)'; this.style.transform=''; this.style.boxShadow='';">
           Logout
         </a>
 
@@ -289,7 +296,7 @@
 
 </header>
 
-<!-- ── LOGOUT MODAL ── -->
+<!-- ── LOGOUT CONFIRM MODAL ── -->
 <% if (!_isViewer && !_isDockerSearch) { %>
 <div id="logoutModal"
   style="display:none; position:fixed; inset:0; background:rgba(6,23,46,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(3px);"
@@ -313,32 +320,79 @@
         onmouseout="this.style.borderColor='#ddd8ce'; this.style.color='#8a9aaa';">
         Cancel
       </button>
-      <a href="/logout"
-        style="flex:1; padding:11px 16px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#c0392b,#922b21); border:none; color:#ffffff; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;"
+      <!-- Confirm logout — shows red loading overlay then redirects -->
+      <button
+        id="confirmLogoutBtn"
+        style="flex:1; padding:11px 16px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#c0392b,#922b21); border:none; color:#ffffff; border-radius:2px; cursor:pointer;"
         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(180,30,30,0.35)';"
         onmouseout="this.style.transform=''; this.style.boxShadow='';">
         Yes, Logout
-      </a>
+      </button>
     </div>
   </div>
 </div>
 <% } %>
 
 <script>
-  // ── Nav loading overlay ──
+  // ── Shared overlay helpers ──
+  function showNavOverlay(icon, title, subtitle, status, isLogout) {
+    document.getElementById('nlIcon').textContent    = icon;
+    document.getElementById('nlTitle').textContent   = title;
+    document.getElementById('nlSubtitle').textContent = subtitle;
+    document.getElementById('nlStatus').textContent  = status;
+
+    var bar  = document.getElementById('nlBar');
+    var dots = [
+      document.getElementById('nlDot1'),
+      document.getElementById('nlDot2'),
+      document.getElementById('nlDot3')
+    ];
+
+    if (isLogout) {
+      bar.classList.add('logout-bar');
+      dots.forEach(function(d) { d.classList.add('logout-dot'); });
+    } else {
+      bar.classList.remove('logout-bar');
+      dots.forEach(function(d) { d.classList.remove('logout-dot'); });
+    }
+
+    document.getElementById('navLoadingOverlay').classList.add('show');
+  }
+
+  // ── Nav links loading ──
   document.querySelectorAll('.nav-link').forEach(function(link) {
     link.addEventListener('click', function(e) {
       var href = this.getAttribute('href');
-      // Don't show for current active page
+      if (!href || href === '#') return;
       if (window.location.pathname === href) return;
       e.preventDefault();
-      var overlay = document.getElementById('navLoadingOverlay');
-      overlay.classList.add('show');
+      showNavOverlay('⏳', 'Please Wait', 'Loading your page...', 'Loading...', false);
       setTimeout(function() {
         window.location.href = href;
-      }, 300); // small delay so overlay renders before navigation
+      }, 300);
     });
   });
+
+  // ── Logout trigger → open confirm modal ──
+  var logoutTrigger = document.getElementById('logoutTrigger');
+  if (logoutTrigger) {
+    logoutTrigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('logoutModal').style.display = 'flex';
+    });
+  }
+
+  // ── Confirm logout → show red loading overlay → redirect ──
+  var confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+  if (confirmLogoutBtn) {
+    confirmLogoutBtn.addEventListener('click', function() {
+      document.getElementById('logoutModal').style.display = 'none';
+      showNavOverlay('⎋', 'Signing Out', 'Clearing your session securely...', 'Logging out...', true);
+      setTimeout(function() {
+        window.location.href = '/logout';
+      }, 1800);
+    });
+  }
 
   // ── Auto-hide header on scroll ──
   (function () {
