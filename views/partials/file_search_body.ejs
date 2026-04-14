@@ -135,6 +135,70 @@
     line-height: 1.6;
   }
 
+  /* ── PAGINATION ── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    animation: fieldFadeIn 0.5s ease 0.6s both;
+  }
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #b8922a;
+    background: transparent;
+    border: 1px solid rgba(184,146,42,0.3);
+    border-radius: 2px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .page-btn:hover {
+    background: rgba(184,146,42,0.1);
+    border-color: #b8922a;
+    color: #8a6010;
+    transform: translateY(-1px);
+  }
+  .page-btn.active {
+    background: #06172e;
+    border-color: #06172e;
+    color: #d4a843;
+    pointer-events: none;
+    cursor: default;
+  }
+  .page-btn.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    cursor: default;
+  }
+  .page-info {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a9aaa;
+    margin: 0 6px;
+  }
+  .page-ellipsis {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #8a9aaa;
+    padding: 0 4px;
+    line-height: 36px;
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     .search-card { padding: 28px 20px !important; margin: 16px 12px !important; }
@@ -150,6 +214,7 @@
     .filter-btn { padding: 6px 12px !important; font-size: 10px !important; }
     .search-card-title { font-size: 17px !important; }
     .lo-card { padding: 40px 20px !important; }
+    .page-btn { min-width: 30px; height: 30px; font-size: 11px; padding: 0 7px; }
   }
 </style>
 
@@ -305,7 +370,6 @@
               <% } %>
 
               <div style="display:flex; flex-direction:column; gap:3px; grid-column:1/-1; margin-top:4px;">
-                <!-- ↗ File Flow button — intercept click to show loading -->
                 <a href="/file_flow?docket=<%=file.docket_number%>"
                   class="file-flow-btn"
                   style="display:inline-flex; align-items:center; gap:6px; padding:9px 22px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#d4a843,#b8922a); border:none; color:#06172e; border-radius:2px; cursor:pointer; text-decoration:none;"
@@ -330,6 +394,59 @@
     No files match your search
   </div>
 
+  <!-- ── PAGINATION ── -->
+  <% if (totalPages > 1) { %>
+  <div class="pagination">
+
+    <!-- Prev button -->
+    <a href="/file_search?page=<%= currentPage - 1 %>"
+      class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">
+      ← Prev
+    </a>
+
+    <%
+      // Smart windowed pagination: always show first, last, current ±1, with ellipsis
+      function pageRange(current, total) {
+        let pages = [];
+        if (total <= 7) {
+          for (let i = 1; i <= total; i++) pages.push(i);
+        } else {
+          pages.push(1);
+          if (current > 3) pages.push('...');
+          for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+            pages.push(i);
+          }
+          if (current < total - 2) pages.push('...');
+          pages.push(total);
+        }
+        return pages;
+      }
+      const pages = pageRange(currentPage, totalPages);
+    %>
+
+    <% pages.forEach(function(p) { %>
+      <% if (p === '...') { %>
+        <span class="page-ellipsis">…</span>
+      <% } else { %>
+        <a href="/file_search?page=<%= p %>"
+          class="page-btn <%= p === currentPage ? 'active' : '' %>">
+          <%= p %>
+        </a>
+      <% } %>
+    <% }); %>
+
+    <!-- Next button -->
+    <a href="/file_search?page=<%= currentPage + 1 %>"
+      class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">
+      Next →
+    </a>
+
+    <!-- Page info -->
+    <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
+
+  </div>
+  <% } %>
+
 </div>
 
 <script>
@@ -345,6 +462,18 @@
       setTimeout(function() {
         window.location.href = href;
       }, 300);
+    });
+  });
+
+  // ── Pagination links: show loading overlay on page switch ──
+  document.querySelectorAll('.page-btn:not(.active):not(.disabled)').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var href = this.getAttribute('href');
+      document.getElementById('navLoadingOverlay').classList.add('show');
+      setTimeout(function() {
+        window.location.href = href;
+      }, 200);
     });
   });
 
