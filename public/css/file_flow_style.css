@@ -19,7 +19,7 @@
     border-top: 3px solid #b8922a;
     border-radius: 2px;
     padding: 40px 44px;
-    max-width: 960px;
+    max-width: 1200px;
     margin: 36px auto;
     box-shadow: 0 4px 32px rgba(6,23,46,0.08), 0 1px 4px rgba(6,23,46,0.04);
     font-family: 'DM Sans', sans-serif;
@@ -417,6 +417,155 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.07);
   text-transform: uppercase;
 }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #eae6de; min-height: 100%; font-family: 'DM Sans', sans-serif; }
+
+    @keyframes formSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fieldFadeIn {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity:0; transform:translateY(-18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity:0; } to { opacity:1; }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    @keyframes barGrow {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
+      50%       { box-shadow: 0 0 0 6px rgba(212,168,67,0); }
+    }
+
+    .conditional-wrap {
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+      max-height: 120px;
+      opacity: 1;
+    }
+    .conditional-wrap.hidden {
+      max-height: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── ACTION COLUMN BADGES ── */
+    .action-badge-done {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      background: #e6f4ea;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+    .action-badge-inprocess {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      background: #fff8e1;
+      color: #f57f17;
+      border: 1px solid #ffe082;
+    }
+
+    /* ── DELETE CONFIRM MODAL ── */
+    .del-confirm-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(6,23,46,0.55);
+      z-index: 10000;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .del-confirm-overlay.open { display: flex; }
+    .del-confirm-box {
+      background: #fff;
+      border-radius: 2px;
+      padding: 32px 28px;
+      width: 100%; max-width: 360px; margin: 20px;
+      box-shadow: 0 24px 64px rgba(6,23,46,0.2);
+      font-family: 'DM Sans', sans-serif;
+      text-align: center;
+      animation: formSlideUp 0.25s cubic-bezier(.4,0,.2,1) both;
+    }
+    .del-confirm-box .ci { font-size: 28px; margin-bottom: 12px; }
+    .del-confirm-box h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 700; color: #06172e; margin-bottom: 8px;
+    }
+    .del-confirm-box p { font-size: 13px; color: #5a6a7a; line-height: 1.7; margin-bottom: 24px; }
+    .del-confirm-footer { display: flex; gap: 10px; }
+    .btn-cancel-del {
+      flex: 1; padding: 11px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: transparent; border: 1px solid #ddd8ce; color: #8a9aaa;
+      border-radius: 2px; cursor: pointer;
+    }
+    .btn-cancel-del:hover { border-color: #b8922a; color: #b8922a; }
+    .btn-confirm-del {
+      flex: 1; padding: 11px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: linear-gradient(135deg,#c0392b,#922b21);
+      border: none; color: #fff; border-radius: 2px; cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-confirm-del:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(180,30,30,0.35); }
+
+    /* ── DELETE ROW BUTTON ── */
+    .btn-delete-flow {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px;
+      font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      background: transparent;
+      border: 1px solid rgba(192,57,43,0.4); color: #c0392b;
+      border-radius: 2px; cursor: pointer;
+      transition: transform 0.18s, background 0.18s;
+      white-space: nowrap;
+    }
+    .btn-delete-flow:hover { background: rgba(192,57,43,0.08); transform: translateY(-1px); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr !important; }
+      .form-card { padding: 28px 20px !important; margin: 16px 12px !important; }
+      .form-footer { flex-wrap: wrap !important; }
+      .form-footer button { flex: 1 !important; min-width: 120px !important; }
+      .header-inner { padding: 16px 20px !important; flex-wrap: wrap !important; gap: 12px !important; }
+      .header-title { font-size: 18px !important; }
+      .header-right { gap: 8px !important; }
+      .btn-nav { padding: 8px 14px !important; font-size: 11px !important; }
+    }
+
+    @media (max-width: 480px) {
+      .form-card { padding: 20px 14px !important; margin: 10px 8px !important; }
+      .form-footer { flex-direction: column !important; }
+      .form-footer button { width: 100% !important; }
+      .header-inner { flex-direction: column !important; align-items: flex-start !important; padding: 14px 16px !important; }
+      .header-right { width: 100% !important; justify-content: flex-start !important; }
+      .header-title { font-size: 16px !important; }
+      .header-eyebrow { font-size: 9px !important; }
+      .btn-nav { padding: 7px 12px !important; font-size: 10px !important; }
+    }
 /* ── TABLET ── */
 @media (max-width: 768px) {
   .flow-card {
@@ -558,3 +707,4 @@
     width: 100%;
   }
 }
+

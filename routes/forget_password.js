@@ -86,16 +86,16 @@ router.post("/forget_password", async (req, res) => {
           to: email,
           subject: "Password Reset OTP — IIEST R&C Cell",
           text:
-`Hello,
+              `Hello,
 
-Your OTP code for password reset is: ${otp}
+              Your OTP code for password reset is: ${otp}
 
-This OTP is valid for 10 minutes. Do not share it with anyone.
+              This OTP is valid for 10 minutes. Do not share it with anyone.
 
-If you did not request a password reset, please ignore this email.
+              If you did not request a password reset, please ignore this email.
 
-— Research and Consultancy Cell
-Indian Institute of Engineering Science and Technology, Shibpur`
+              — Research and Consultancy Cell
+              Indian Institute of Engineering Science and Technology, Shibpur`
         };
 
         await transporter.sendMail(mailOptions);
