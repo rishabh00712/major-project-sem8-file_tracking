@@ -293,4 +293,22 @@ router.post("/cancel-hold/:id", async (req, res) => {
   }
 });
 
+router.post('/delete_file_flow/:id', async (req, res) => {
+  const { id } = req.params;
+  const { docket } = req.query; // docket_number passed as query param
+
+  try {
+    await pool.query(
+      'DELETE FROM file_flow WHERE id = $1 AND docket_number = $2',
+      [id, docket]
+    );
+
+    res.redirect('/file_flow?docket=' + docket);
+  } catch (err) {
+    console.error('Error deleting file_flow row:', err);
+    res.status(500).send('Error deleting flow entry');
+  }
+});
+
+
 module.exports = router;

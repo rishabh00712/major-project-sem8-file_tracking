@@ -73,6 +73,65 @@
       border: 1px solid #ffe082;
     }
 
+    /* ── DELETE CONFIRM MODAL ── */
+    .del-confirm-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(6,23,46,0.55);
+      z-index: 10000;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .del-confirm-overlay.open { display: flex; }
+    .del-confirm-box {
+      background: #fff;
+      border-radius: 2px;
+      padding: 32px 28px;
+      width: 100%; max-width: 360px; margin: 20px;
+      box-shadow: 0 24px 64px rgba(6,23,46,0.2);
+      font-family: 'DM Sans', sans-serif;
+      text-align: center;
+      animation: formSlideUp 0.25s cubic-bezier(.4,0,.2,1) both;
+    }
+    .del-confirm-box .ci { font-size: 28px; margin-bottom: 12px; }
+    .del-confirm-box h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 700; color: #06172e; margin-bottom: 8px;
+    }
+    .del-confirm-box p { font-size: 13px; color: #5a6a7a; line-height: 1.7; margin-bottom: 24px; }
+    .del-confirm-footer { display: flex; gap: 10px; }
+    .btn-cancel-del {
+      flex: 1; padding: 11px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: transparent; border: 1px solid #ddd8ce; color: #8a9aaa;
+      border-radius: 2px; cursor: pointer;
+    }
+    .btn-cancel-del:hover { border-color: #b8922a; color: #b8922a; }
+    .btn-confirm-del {
+      flex: 1; padding: 11px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: linear-gradient(135deg,#c0392b,#922b21);
+      border: none; color: #fff; border-radius: 2px; cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-confirm-del:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(180,30,30,0.35); }
+
+    /* ── DELETE ROW BUTTON ── */
+    .btn-delete-flow {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px;
+      font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      background: transparent;
+      border: 1px solid rgba(192,57,43,0.4); color: #c0392b;
+      border-radius: 2px; cursor: pointer;
+      transition: transform 0.18s, background 0.18s;
+      white-space: nowrap;
+    }
+    .btn-delete-flow:hover { background: rgba(192,57,43,0.08); transform: translateY(-1px); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .form-grid { grid-template-columns: 1fr !important; }
@@ -107,6 +166,20 @@
   const isComplete = typeof complete !== 'undefined' && complete;
 %>
 
+<!-- ── DELETE FLOW ROW CONFIRM MODAL ── -->
+<div class="del-confirm-overlay" id="delFlowModal">
+  <div class="del-confirm-box">
+    <div class="ci">🗑️</div>
+    <h3>Delete Flow Entry</h3>
+    <p id="delFlowMsg">Permanently delete this flow entry? This cannot be undone.</p>
+    <div class="del-confirm-footer">
+      <button class="btn-cancel-del" onclick="closeDelFlow()">Cancel</button>
+      <button class="btn-confirm-del" onclick="doDelFlow()">Yes, Delete</button>
+    </div>
+    <form id="delFlowForm" method="POST" style="display:none;"></form>
+  </div>
+</div>
+
 <div class="flow-card">
 
   <!-- Header -->
@@ -132,6 +205,9 @@
           <th>Subject</th>
           <th>File</th>
           <th>Action</th>
+          <% if(!isViewer){ %>
+          <th>Delete</th>
+          <% } %>
         </tr>
       </thead>
       <tbody>
@@ -167,22 +243,34 @@
           <!-- ACTION COLUMN -->
           <td>
             <% if(f.hold){ %>
-              <!-- Hold exists: always show hold info regardless of viewer -->
-              <div>
+              <!-- Hold exists -->
+              <div style="display:flex; flex-direction:column; gap:6px; min-width:160px;">
                 <span class="hold-badge">⏸ On Hold</span>
-                <p class="hold-desc"><%=f.hold_desc%></p>
+                <!-- ↓ MORE SPACE for hold description -->
+                <p class="hold-desc" style="
+                  font-size: 12px;
+                  color: #5a4a2a;
+                  background: #fdf6e3;
+                  border: 1px solid #f0d090;
+                  border-radius: 4px;
+                  padding: 8px 12px;
+                  line-height: 1.6;
+                  min-height: 48px;
+                  white-space: pre-wrap;
+                  word-break: break-word;
+                  margin-top: 2px;
+                "><%=f.hold_desc%></p>
                 <% if(!isViewer){ %>
                   <button
                     type="button"
                     class="btn-cancel-hold"
-                    style="margin-top:8px;"
                     onclick="showCancelConfirm('/cancel-hold/<%=f.id%>?docket=<%=docket_number%>')">
                     Cancel Hold
                   </button>
                 <% } %>
               </div>
             <% } else if(isViewer) { %>
-              <!-- Viewer mode: show Done / In Process badges instead of buttons -->
+              <!-- Viewer mode badges -->
               <% if(i === lastIndex){ %>
                 <% if(isComplete){ %>
                   <span class="action-badge-done">Complete</span>
@@ -193,7 +281,7 @@
                 <span class="action-badge-done">Done</span>
               <% } %>
             <% } else { %>
-              <!-- Admin mode: show original Hold button -->
+              <!-- Admin mode: Hold button -->
               <button
                 class="btn-view"
                 onclick="showHoldModal('/hold/<%=f.id%>?docket=<%=docket_number%>')">
@@ -202,31 +290,42 @@
             <% } %>
           </td>
 
+          <!-- DELETE COLUMN (admin only) -->
+          <% if(!isViewer){ %>
+          <td>
+            <button
+              class="btn-delete-flow"
+              onclick="showDelFlow(<%=f.id%>, '<%=f.docket_number || docket_number%>', '<%=f.name%>')">
+              🗑️ Delete
+            </button>
+          </td>
+          <% } %>
+
         </tr>
         <% }) %>
 
-        <!-- Bottom row: Add New Flow OR hold notice — hidden for viewers -->
+        <!-- Bottom row -->
         <% if(!isViewer){ %>
-            <tr class="add-row">
-              <td colspan="7">
-                <% if(isComplete){ %>
-                  <span class="action-badge-done" style="font-size:12px; padding:6px 16px;">✓ File Complete</span>
-                <% } else if(hasActiveHold){ %>
-                  <span class="hold-active-notice">
-                    ⏸ A hold is active — new flow entries are disabled
-                  </span>
-                <% } else { %>
-                  <button class="btn-add" onclick="showForm()">+ Add New Flow</button>
-                <% } %>
-              </td>
-            </tr>
+        <tr class="add-row">
+          <td colspan="8">
+            <% if(isComplete){ %>
+              <span class="action-badge-done" style="font-size:12px; padding:6px 16px;">✓ File Complete</span>
+            <% } else if(hasActiveHold){ %>
+              <span class="hold-active-notice">
+                ⏸ A hold is active — new flow entries are disabled
+              </span>
+            <% } else { %>
+              <button class="btn-add" onclick="showForm()">+ Add New Flow</button>
             <% } %>
+          </td>
+        </tr>
+        <% } %>
 
       </tbody>
     </table>
   </div>
 
-  <!-- Add Flow Panel (below table) — hidden for viewers -->
+  <!-- Add Flow Panel -->
   <% if(!isViewer && !isComplete){ %>
   <div class="add-flow-panel" id="formDiv">
     <div class="section-label" style="margin-bottom:20px;">New Flow Entry</div>
@@ -306,7 +405,6 @@
         <button type="button" class="btn-reset" onclick="closeHoldModal()">Cancel</button>
         <button type="button" class="btn-hold" onclick="submitHold()">Submit Hold</button>
       </div>
-      <!-- Hidden real form submitted on confirm -->
       <form id="holdRealForm" method="POST" style="display:none;">
         <input type="hidden" name="description" id="holdDescHidden">
       </form>
@@ -347,6 +445,8 @@
   <% if(!isViewer){ %>
   let _holdAction = '';
   let _cancelAction = '';
+  let _delId = null;
+  let _delDocket = '';
 
   // ── HOLD MODAL ──
   function showHoldModal(action) {
@@ -384,7 +484,7 @@
     document.getElementById('holdModal').classList.add('open');
   }
 
-  // ── CANCEL HOLD CONFIRM ──
+  // ── CANCEL HOLD ──
   function showCancelConfirm(action) {
     _cancelAction = action;
     document.getElementById('cancelConfirmModal').classList.add('open');
@@ -398,6 +498,29 @@
 
   function cancelConfirmNo() {
     document.getElementById('cancelConfirmModal').classList.remove('open');
+  }
+
+  // ── DELETE FLOW ROW ──
+  function showDelFlow(id, docket, name) {
+    _delId = id;
+    _delDocket = docket;
+    document.getElementById('delFlowMsg').textContent =
+      'Permanently delete the flow entry by "' + name + '" (Docket: ' + docket + ')? This cannot be undone.';
+    document.getElementById('delFlowModal').classList.add('open');
+  }
+
+  function closeDelFlow() {
+    document.getElementById('delFlowModal').classList.remove('open');
+    _delId = null;
+    _delDocket = '';
+  }
+
+  function doDelFlow() {
+    if (!_delId) return;
+    const form = document.getElementById('delFlowForm');
+    form.action = '/delete_file_flow/' + _delId + '?docket=' + _delDocket;
+    closeDelFlow();
+    form.submit();
   }
 
   // ── ADD FLOW PANEL ──
