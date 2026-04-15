@@ -548,9 +548,10 @@
   }
 
   function doConfirm() {
-    closeConfirm();
-    if (_confirmAction) _confirmAction();
-  }
+  const action = _confirmAction;
+  closeConfirm();
+  if (action) action();
+}
 
   // ── Post helper ──
   function postTo(url) {
