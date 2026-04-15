@@ -17,17 +17,33 @@ router.get("/file_flow", async (req, res) => {
 
     console.log("Docket:", docket);
 
-    const result = await pool.query(
+    // 1️⃣ Get file_flow data
+    const flowResult = await pool.query(
       `SELECT * FROM file_flow 
        WHERE docket_number = $1 
        ORDER BY id ASC`,
       [docket]
     );
 
+    // 2️⃣ Get complete status from files table
+    const fileResult = await pool.query(
+      `SELECT complete FROM files 
+       WHERE docket_number = $1 
+       LIMIT 1`,
+      [docket]
+    );
+
+    // 3️⃣ Extract complete value
+    const complete = fileResult.rows.length > 0 
+      ? fileResult.rows[0].complete 
+      : false;
+
+    // 4️⃣ Render with complete
     return res.render("file_flow", {
       docket_number: docket,
-      forms: result.rows,
-      active: ""
+      forms: flowResult.rows,
+      active: "",
+      complete: complete   // 👈 added this
     });
 
   } catch (err) {

@@ -104,6 +104,7 @@
   const hasActiveHold = forms.some(f => f.hold);
   const isViewer = typeof viewer !== 'undefined' && viewer;
   const lastIndex = forms.length - 1;
+  const isComplete = typeof complete !== 'undefined' && complete;
 %>
 
 <div class="flow-card">
@@ -183,7 +184,11 @@
             <% } else if(isViewer) { %>
               <!-- Viewer mode: show Done / In Process badges instead of buttons -->
               <% if(i === lastIndex){ %>
-                <span class="action-badge-inprocess">In Process</span>
+                <% if(isComplete){ %>
+                  <span class="action-badge-done">Complete</span>
+                <% } else { %>
+                  <span class="action-badge-inprocess">In Process</span>
+                <% } %>
               <% } else { %>
                 <span class="action-badge-done">Done</span>
               <% } %>
@@ -202,25 +207,27 @@
 
         <!-- Bottom row: Add New Flow OR hold notice — hidden for viewers -->
         <% if(!isViewer){ %>
-        <tr class="add-row">
-          <td colspan="7">
-            <% if(hasActiveHold){ %>
-              <span class="hold-active-notice">
-                ⏸ A hold is active — new flow entries are disabled
-              </span>
-            <% } else { %>
-              <button class="btn-add" onclick="showForm()">+ Add New Flow</button>
+            <tr class="add-row">
+              <td colspan="7">
+                <% if(isComplete){ %>
+                  <span class="action-badge-done" style="font-size:12px; padding:6px 16px;">✓ File Complete</span>
+                <% } else if(hasActiveHold){ %>
+                  <span class="hold-active-notice">
+                    ⏸ A hold is active — new flow entries are disabled
+                  </span>
+                <% } else { %>
+                  <button class="btn-add" onclick="showForm()">+ Add New Flow</button>
+                <% } %>
+              </td>
+            </tr>
             <% } %>
-          </td>
-        </tr>
-        <% } %>
 
       </tbody>
     </table>
   </div>
 
   <!-- Add Flow Panel (below table) — hidden for viewers -->
-  <% if(!isViewer){ %>
+  <% if(!isViewer && !isComplete){ %>
   <div class="add-flow-panel" id="formDiv">
     <div class="section-label" style="margin-bottom:20px;">New Flow Entry</div>
     <form action="/file_flow?docket=<%=docket_number%>" method="POST" enctype="multipart/form-data">

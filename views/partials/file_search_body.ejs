@@ -43,9 +43,7 @@
     justify-content: center;
     font-family: 'DM Sans', sans-serif;
   }
-  #navLoadingOverlay.show {
-    display: flex;
-  }
+  #navLoadingOverlay.show { display: flex; }
   .lo-card {
     background: #fff;
     border-radius: 2px;
@@ -61,55 +59,33 @@
     gap: 28px;
   }
   .lo-icon {
-    width: 56px;
-    height: 56px;
+    width: 56px; height: 56px;
     background: linear-gradient(135deg, #d4a843, #b8922a);
     border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-size: 24px;
   }
   .lo-title { text-align: center; }
   .lo-title h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #06172e;
-    letter-spacing: 0.02em;
-    margin-bottom: 6px;
+    font-size: 22px; font-weight: 700; color: #06172e;
+    letter-spacing: 0.02em; margin-bottom: 6px;
   }
-  .lo-title p {
-    font-size: 12px;
-    color: #8a9aaa;
-    letter-spacing: 0.03em;
-  }
+  .lo-title p { font-size: 12px; color: #8a9aaa; letter-spacing: 0.03em; }
   .lo-track {
-    width: 100%;
-    height: 3px;
-    background: #ede8df;
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
+    width: 100%; height: 3px; background: #ede8df;
+    border-radius: 2px; overflow: hidden; position: relative;
   }
   .lo-bar {
-    position: absolute;
-    top: 0; left: 0;
-    height: 100%;
-    width: 30%;
+    position: absolute; top: 0; left: 0;
+    height: 100%; width: 30%;
     background: linear-gradient(90deg, #b8922a, #f0c84a, #d4a843);
     border-radius: 2px;
     animation: barFlow 1.6s ease-in-out infinite;
   }
-  .lo-dots {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+  .lo-dots { display: flex; gap: 8px; align-items: center; }
   .lo-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+    width: 8px; height: 8px; border-radius: 50%;
     background: #d4a843;
     animation: dotBounce 1.2s ease-in-out infinite;
   }
@@ -117,87 +93,140 @@
   .lo-dot:nth-child(2) { animation-delay: 0.2s; }
   .lo-dot:nth-child(3) { animation-delay: 0.4s; }
   .lo-status {
-    font-size: 12px;
-    color: #8a9aaa;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 12px; color: #8a9aaa;
+    letter-spacing: 0.05em; text-transform: uppercase;
     animation: pulse 2s ease-in-out infinite;
   }
-  .lo-divider {
-    width: 100%;
-    height: 1px;
-    background: #ede8df;
+  .lo-divider { width: 100%; height: 1px; background: #ede8df; }
+  .lo-footer { font-size: 11px; color: #b0bac5; text-align: center; line-height: 1.6; }
+
+  /* ── CONFIRM MODAL ── */
+  .confirm-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(6,23,46,0.55);
+    z-index: 10000;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
   }
-  .lo-footer {
-    font-size: 11px;
-    color: #b0bac5;
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: #fff;
+    border-radius: 2px;
+    padding: 32px 28px;
+    width: 100%; max-width: 360px; margin: 20px;
+    box-shadow: 0 24px 64px rgba(6,23,46,0.2);
+    font-family: 'DM Sans', sans-serif;
     text-align: center;
-    line-height: 1.6;
+    animation: formSlideUp 0.25s cubic-bezier(.4,0,.2,1) both;
+  }
+  .confirm-box .ci { font-size: 28px; margin-bottom: 12px; }
+  .confirm-box h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 700; color: #06172e; margin-bottom: 8px;
+  }
+  .confirm-box p { font-size: 13px; color: #5a6a7a; line-height: 1.7; margin-bottom: 24px; }
+  .confirm-footer { display: flex; gap: 10px; }
+  .btn-cancel-conf {
+    flex: 1; padding: 11px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: transparent; border: 1px solid #ddd8ce; color: #8a9aaa;
+    border-radius: 2px; cursor: pointer;
+  }
+  .btn-cancel-conf:hover { border-color: #b8922a; color: #b8922a; }
+  .btn-confirm-red {
+    flex: 1; padding: 11px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: linear-gradient(135deg,#c0392b,#922b21);
+    border: none; color: #fff; border-radius: 2px; cursor: pointer;
+  }
+  .btn-confirm-red:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(180,30,30,0.35); }
+  .btn-confirm-green {
+    flex: 1; padding: 11px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: linear-gradient(135deg,#2e7d32,#1b5e20);
+    border: none; color: #fff; border-radius: 2px; cursor: pointer;
+  }
+  .btn-confirm-green:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,125,50,0.35); }
+
+  /* ── ACTION BUTTONS ── */
+  .btn-complete {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: linear-gradient(135deg,#2e7d32,#1b5e20);
+    border: none; color: #fff; border-radius: 2px; cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .btn-complete:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(46,125,50,0.35); }
+
+  .btn-reopen {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: transparent;
+    border: 1px solid rgba(46,125,50,0.5); color: #2e7d32;
+    border-radius: 2px; cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+  }
+  .btn-reopen:hover { background: rgba(46,125,50,0.08); transform: translateY(-1px); }
+
+  .btn-delete-row {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: transparent;
+    border: 1px solid rgba(192,57,43,0.4); color: #c0392b;
+    border-radius: 2px; cursor: pointer;
+    transition: transform 0.18s, background 0.18s;
+  }
+  .btn-delete-row:hover { background: rgba(192,57,43,0.08); transform: translateY(-1px); }
+
+  .btn-delete-page {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 20px;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(192,57,43,0.08);
+    border: 1px solid rgba(192,57,43,0.4); color: #c0392b;
+    border-radius: 2px; cursor: pointer;
+    transition: background 0.18s, transform 0.18s;
+  }
+  .btn-delete-page:hover { background: rgba(192,57,43,0.15); transform: translateY(-1px); }
+
+  /* ── COMPLETED ROW ── */
+  tr.row-complete td { background: #f0faf1 !important; }
+  tr.row-complete .docket {
+    background: rgba(46,125,50,0.10) !important;
+    border-color: rgba(46,125,50,0.25) !important;
+    color: #2e7d32 !important;
   }
 
   /* ── PAGINATION ── */
   .pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 32px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; margin-top: 32px; flex-wrap: wrap;
     animation: fieldFadeIn 0.5s ease 0.6s both;
   }
   .page-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: #b8922a;
-    background: transparent;
-    border: 1px solid rgba(184,146,42,0.3);
-    border-radius: 2px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.18s ease;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px; padding: 0 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; color: #b8922a; background: transparent;
+    border: 1px solid rgba(184,146,42,0.3); border-radius: 2px;
+    text-decoration: none; cursor: pointer; transition: all 0.18s ease;
   }
-  .page-btn:hover {
-    background: rgba(184,146,42,0.1);
-    border-color: #b8922a;
-    color: #8a6010;
-    transform: translateY(-1px);
-  }
-  .page-btn.active {
-    background: #06172e;
-    border-color: #06172e;
-    color: #d4a843;
-    pointer-events: none;
-    cursor: default;
-  }
-  .page-btn.disabled {
-    opacity: 0.35;
-    pointer-events: none;
-    cursor: default;
-  }
-  .page-info {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #8a9aaa;
-    margin: 0 6px;
-  }
-  .page-ellipsis {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    color: #8a9aaa;
-    padding: 0 4px;
-    line-height: 36px;
-  }
+  .page-btn:hover { background: rgba(184,146,42,0.1); border-color: #b8922a; color: #8a6010; transform: translateY(-1px); }
+  .page-btn.active { background: #06172e; border-color: #06172e; color: #d4a843; pointer-events: none; }
+  .page-btn.disabled { opacity: 0.35; pointer-events: none; }
+  .page-info { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #8a9aaa; margin: 0 6px; }
+  .page-ellipsis { font-family: 'DM Sans', sans-serif; font-size: 13px; color: #8a9aaa; padding: 0 4px; line-height: 36px; }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
@@ -215,6 +244,7 @@
     .search-card-title { font-size: 17px !important; }
     .lo-card { padding: 40px 20px !important; }
     .page-btn { min-width: 30px; height: 30px; font-size: 11px; padding: 0 7px; }
+    .action-btns { flex-direction: column !important; }
   }
 </style>
 
@@ -226,9 +256,7 @@
       <h1>Loading File Flow</h1>
       <p>Please wait while we fetch the records</p>
     </div>
-    <div class="lo-track">
-      <div class="lo-bar"></div>
-    </div>
+    <div class="lo-track"><div class="lo-bar"></div></div>
     <div class="lo-dots">
       <div class="lo-dot"></div>
       <div class="lo-dot"></div>
@@ -243,26 +271,48 @@
   </div>
 </div>
 
+<!-- ── CONFIRM MODAL (shared, content set by JS) ── -->
+<div class="confirm-overlay" id="confirmModal">
+  <div class="confirm-box">
+    <div class="ci" id="confirmIcon">🗑️</div>
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmMsg">This action cannot be undone.</p>
+    <div class="confirm-footer">
+      <button class="btn-cancel-conf" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-confirm-red" id="confirmActionBtn" onclick="doConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <!-- MAIN CARD -->
 <div class="search-card" style="background:#ffffff; border:1px solid rgba(184,146,42,0.18); border-top:3px solid #b8922a; border-radius:2px; padding:40px 44px; max-width:900px; margin:36px auto; box-shadow:0 4px 32px rgba(6,23,46,0.08), 0 1px 4px rgba(6,23,46,0.04); font-family:'DM Sans',sans-serif; animation:formSlideUp 0.7s cubic-bezier(.4,0,.2,1) 0.2s both;">
 
-  <!-- Search Input -->
-  <div style="position:relative; margin-bottom:16px; animation:fieldFadeIn 0.5s ease 0.4s both;">
-    <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:15px; color:#b8922a; pointer-events:none;">⌕</span>
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Search by docket number…"
-      onkeyup="filterAll()"
-      style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:11px 14px 11px 40px; width:100%; outline:none;"
-      onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
-      onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';"
-    />
+  <!-- Top bar: search + delete page button -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; animation:fieldFadeIn 0.5s ease 0.35s both;">
+
+    <!-- Search Input -->
+    <div style="position:relative; flex:1; min-width:200px;">
+      <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:15px; color:#b8922a; pointer-events:none;">⌕</span>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by docket number…"
+        onkeyup="filterAll()"
+        style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:11px 14px 11px 40px; width:100%; outline:none;"
+        onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
+        onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';"
+      />
+    </div>
+
+    <!-- Delete Page Button -->
+    <button class="btn-delete-page" onclick="confirmDeletePage()">
+      🗑️ Delete This Page
+    </button>
+
   </div>
 
   <!-- Filter Bar -->
   <div class="filter-bar" style="display:flex; align-items:center; gap:10px; margin-bottom:24px; flex-wrap:wrap; animation:fieldFadeIn 0.5s ease 0.45s both;">
-
     <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa; flex-shrink:0;">Filter:</span>
 
     <button class="filter-btn" id="filter-all" onclick="setFilter('all')"
@@ -283,10 +333,9 @@
       onmouseout="if(activeFilter!=='letter') this.style.background='transparent';">
       ✉ Letters
     </button>
-
   </div>
 
-  <!-- Table wrap -->
+  <!-- Table -->
   <div class="table-wrap">
     <table class="file-table" id="fileTable" style="width:100%; border-collapse:collapse; font-size:13.5px; animation:fieldFadeIn 0.5s ease 0.5s both;">
       <thead>
@@ -295,22 +344,28 @@
           <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Project Code</th>
           <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Date</th>
           <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Subject</th>
+          <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Status</th>
         </tr>
       </thead>
 
       <tbody>
       <% files.forEach(function(file, i){ %>
 
-        <tr class="data-row"
+        <tr class="data-row <%= file.complete ? 'row-complete' : '' %>"
           id="row-<%=i%>"
           data-subject="<%=file.subject%>"
+          data-docket="<%=file.docket_number%>"
           onclick="toggleDetails(<%=i%>)"
           style="cursor:pointer; border-bottom:1px solid #ede8df; transition:background 0.15s ease; animation:rowFadeIn 0.4s ease both; animation-delay:<%=0.1+i*0.06%>s;"
-          onmouseover="if(document.getElementById('details-<%=i%>').style.display!=='table-row') this.style.background='#faf6ee';"
+          onmouseover="if(document.getElementById('details-<%=i%>').style.display!=='table-row') this.style.background='<%=file.complete ? '#e8f5e9' : '#faf6ee'%>';"
           onmouseout="if(document.getElementById('details-<%=i%>').style.display!=='table-row') this.style.background='';">
 
-          <td style="padding:13px 16px; color:#06172e; border:none; vertical-align:middle;">
-            <span class="docket" style="display:inline-block; font-weight:700; font-size:12px; letter-spacing:0.08em; color:#b8922a; background:rgba(184,146,42,0.08); border:1px solid rgba(184,146,42,0.2); border-radius:2px; padding:3px 10px; white-space:nowrap;">
+          <td style="padding:13px 16px; border:none; vertical-align:middle;">
+            <span class="docket" style="display:inline-block; font-weight:700; font-size:12px; letter-spacing:0.08em;
+              color:<%=file.complete ? '#2e7d32' : '#b8922a'%>;
+              background:<%=file.complete ? 'rgba(46,125,50,0.10)' : 'rgba(184,146,42,0.08)'%>;
+              border:1px solid <%=file.complete ? 'rgba(46,125,50,0.25)' : 'rgba(184,146,42,0.2)'%>;
+              border-radius:2px; padding:3px 10px; white-space:nowrap;">
               <%=file.docket_number%>
             </span>
           </td>
@@ -331,12 +386,24 @@
             </span>
           </td>
 
+          <td style="padding:13px 16px; border:none; vertical-align:middle;">
+            <% if(file.complete){ %>
+              <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#2e7d32; background:rgba(46,125,50,0.10); border:1px solid rgba(46,125,50,0.25); border-radius:20px; padding:3px 10px;">
+                ✓ Complete
+              </span>
+            <% } else { %>
+              <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#b8922a; background:rgba(184,146,42,0.10); border:1px solid rgba(184,146,42,0.25); border-radius:20px; padding:3px 10px;">
+                ⏳ In Progress
+              </span>
+            <% } %>
+          </td>
+
         </tr>
 
         <!-- Detail Row -->
         <tr id="details-<%=i%>" style="display:none;">
-          <td colspan="4" style="background:#f7f4ef; border-bottom:1px solid #ede8df; padding:0; border:none;">
-            <div class="detail-grid" style="padding:20px 20px 20px 24px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 24px; border-left:3px solid #b8922a; margin:0 16px 12px; border-radius:0 0 2px 2px;">
+          <td colspan="5" style="background:<%=file.complete ? '#f0faf1' : '#f7f4ef'%>; border-bottom:1px solid #ede8df; padding:0; border:none;">
+            <div class="detail-grid" style="padding:20px 20px 20px 24px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 24px; border-left:3px solid <%=file.complete ? '#2e7d32' : '#b8922a'%>; margin:0 16px 12px; border-radius:0 0 2px 2px;">
 
               <div style="display:flex; flex-direction:column; gap:3px;">
                 <span style="font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:#8a9aaa;">Department</span>
@@ -369,7 +436,10 @@
               </div>
               <% } %>
 
-              <div style="display:flex; flex-direction:column; gap:3px; grid-column:1/-1; margin-top:4px;">
+              <!-- Action buttons -->
+              <div class="action-btns" style="display:flex; flex-wrap:wrap; align-items:center; gap:10px; grid-column:1/-1; margin-top:4px;">
+
+                <!-- File Flow -->
                 <a href="/file_flow?docket=<%=file.docket_number%>"
                   class="file-flow-btn"
                   style="display:inline-flex; align-items:center; gap:6px; padding:9px 22px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,#d4a843,#b8922a); border:none; color:#06172e; border-radius:2px; cursor:pointer; text-decoration:none;"
@@ -377,6 +447,26 @@
                   onmouseout="this.style.transform=''; this.style.boxShadow='';">
                   ↗ File Flow
                 </a>
+
+                <!-- Complete / Reopen -->
+                <% if(file.complete){ %>
+                  <button class="btn-reopen"
+                    onclick="event.stopPropagation(); confirmReopen('<%=file.docket_number%>')">
+                    ↩ Reopen File
+                  </button>
+                <% } else { %>
+                  <button class="btn-complete"
+                    onclick="event.stopPropagation(); confirmComplete('<%=file.docket_number%>')">
+                    ✓ Complete File
+                  </button>
+                <% } %>
+
+                <!-- Delete -->
+                <button class="btn-delete-row"
+                  onclick="event.stopPropagation(); confirmDeleteRow('<%=file.docket_number%>')">
+                  🗑️ Delete
+                </button>
+
               </div>
 
             </div>
@@ -394,18 +484,13 @@
     No files match your search
   </div>
 
-  <!-- ── PAGINATION ── -->
+  <!-- PAGINATION -->
   <% if (totalPages > 1) { %>
   <div class="pagination">
-
-    <!-- Prev button -->
     <a href="/file_search?page=<%= currentPage - 1 %>"
-      class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">
-      ← Prev
-    </a>
+      class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">← Prev</a>
 
     <%
-      // Smart windowed pagination: always show first, last, current ±1, with ellipsis
       function pageRange(current, total) {
         let pages = [];
         if (total <= 7) {
@@ -413,9 +498,7 @@
         } else {
           pages.push(1);
           if (current > 3) pages.push('...');
-          for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
-            pages.push(i);
-          }
+          for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
           if (current < total - 2) pages.push('...');
           pages.push(total);
         }
@@ -429,21 +512,13 @@
         <span class="page-ellipsis">…</span>
       <% } else { %>
         <a href="/file_search?page=<%= p %>"
-          class="page-btn <%= p === currentPage ? 'active' : '' %>">
-          <%= p %>
-        </a>
+          class="page-btn <%= p === currentPage ? 'active' : '' %>"><%= p %></a>
       <% } %>
     <% }); %>
 
-    <!-- Next button -->
     <a href="/file_search?page=<%= currentPage + 1 %>"
-      class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">
-      Next →
-    </a>
-
-    <!-- Page info -->
+      class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">Next →</a>
     <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
-
   </div>
   <% } %>
 
@@ -453,60 +528,141 @@
   let activeFilter = "all";
   const BILL_SUBJECTS = ["Tax Invoice", "Payable Bill", "Bill"];
 
+  // ── Confirm modal state ──
+  let _confirmAction = null;
+
+  function openConfirm(icon, title, msg, btnClass, btnText, action) {
+    document.getElementById('confirmIcon').textContent  = icon;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent   = msg;
+    const btn = document.getElementById('confirmActionBtn');
+    btn.className = btnClass;
+    btn.textContent = btnText;
+    _confirmAction = action;
+    document.getElementById('confirmModal').classList.add('open');
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirmModal').classList.remove('open');
+    _confirmAction = null;
+  }
+
+  function doConfirm() {
+    closeConfirm();
+    if (_confirmAction) _confirmAction();
+  }
+
+  // ── Post helper ──
+  function postTo(url) {
+    document.getElementById('navLoadingOverlay').classList.add('show');
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  // ── Complete file ──
+  function confirmComplete(docket) {
+    openConfirm(
+      '✓',
+      'Complete File',
+      'Mark docket ' + docket + ' as complete? This will close the file.',
+      'btn-confirm-green',
+      'Yes, Complete',
+      function() { postTo('/complete_file/' + docket); }
+    );
+  }
+
+  // ── Reopen file ──
+  function confirmReopen(docket) {
+    openConfirm(
+      '↩',
+      'Reopen File',
+      'Reopen docket ' + docket + '? It will be marked as In Progress again.',
+      'btn-confirm-green',
+      'Yes, Reopen',
+      function() { postTo('/reopen_file/' + docket); }
+    );
+  }
+
+  // ── Delete single row ──
+  function confirmDeleteRow(docket) {
+    openConfirm(
+      '🗑️',
+      'Delete File',
+      'Permanently delete docket ' + docket + '? This cannot be undone.',
+      'btn-confirm-red',
+      'Yes, Delete',
+      function() { postTo('/delete_file/' + docket); }
+    );
+  }
+
+  // ── Delete all files on current page ──
+  function confirmDeletePage() {
+    const dockets = [];
+    document.querySelectorAll('#fileTable .data-row').forEach(function(row) {
+      if (row.style.display !== 'none') {
+        dockets.push(row.getAttribute('data-docket'));
+      }
+    });
+    if (dockets.length === 0) return;
+    openConfirm(
+      '🗑️',
+      'Delete This Page',
+      'Permanently delete all ' + dockets.length + ' file(s) on this page? This cannot be undone.',
+      'btn-confirm-red',
+      'Yes, Delete All',
+      function() {
+        document.getElementById('navLoadingOverlay').classList.add('show');
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/delete_page_files';
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = 'dockets';
+        input.value = JSON.stringify(dockets);
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    );
+  }
+
   // ── File Flow button loading ──
   document.querySelectorAll('.file-flow-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       var href = this.getAttribute('href');
       document.getElementById('navLoadingOverlay').classList.add('show');
-      setTimeout(function() {
-        window.location.href = href;
-      }, 300);
+      setTimeout(function() { window.location.href = href; }, 300);
     });
   });
 
-  // ── Pagination links: show loading overlay on page switch ──
+  // ── Pagination loading ──
   document.querySelectorAll('.page-btn:not(.active):not(.disabled)').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       var href = this.getAttribute('href');
       document.getElementById('navLoadingOverlay').classList.add('show');
-      setTimeout(function() {
-        window.location.href = href;
-      }, 200);
+      setTimeout(function() { window.location.href = href; }, 200);
     });
   });
 
+  // ── Filter ──
   function setFilter(type) {
     activeFilter = type;
-
     const allBtn    = document.getElementById("filter-all");
     const billBtn   = document.getElementById("filter-bill");
     const letterBtn = document.getElementById("filter-letter");
 
-    allBtn.style.background    = "transparent";
-    allBtn.style.border        = "1px solid rgba(6,23,46,0.2)";
-    allBtn.style.color         = "#06172e";
-    billBtn.style.background   = "transparent";
-    billBtn.style.border       = "1px solid rgba(184,146,42,0.3)";
-    billBtn.style.color        = "#8a6010";
-    letterBtn.style.background = "transparent";
-    letterBtn.style.border     = "1px solid rgba(42,100,160,0.3)";
-    letterBtn.style.color      = "#1a4a7a";
+    allBtn.style.background    = "transparent"; allBtn.style.border = "1px solid rgba(6,23,46,0.2)"; allBtn.style.color = "#06172e";
+    billBtn.style.background   = "transparent"; billBtn.style.border = "1px solid rgba(184,146,42,0.3)"; billBtn.style.color = "#8a6010";
+    letterBtn.style.background = "transparent"; letterBtn.style.border = "1px solid rgba(42,100,160,0.3)"; letterBtn.style.color = "#1a4a7a";
 
-    if(type === "all"){
-      allBtn.style.background = "#06172e";
-      allBtn.style.border     = "1px solid #06172e";
-      allBtn.style.color      = "#d4a843";
-    } else if(type === "bill"){
-      billBtn.style.background = "rgba(184,146,42,0.15)";
-      billBtn.style.border     = "1px solid #b8922a";
-      billBtn.style.color      = "#8a6010";
-    } else if(type === "letter"){
-      letterBtn.style.background = "rgba(42,100,184,0.12)";
-      letterBtn.style.border     = "1px solid #2a64b8";
-      letterBtn.style.color      = "#1a4a7a";
-    }
+    if(type === "all")    { allBtn.style.background = "#06172e"; allBtn.style.border = "1px solid #06172e"; allBtn.style.color = "#d4a843"; }
+    else if(type === "bill")   { billBtn.style.background = "rgba(184,146,42,0.15)"; billBtn.style.border = "1px solid #b8922a"; billBtn.style.color = "#8a6010"; }
+    else if(type === "letter") { letterBtn.style.background = "rgba(42,100,184,0.12)"; letterBtn.style.border = "1px solid #2a64b8"; letterBtn.style.color = "#1a4a7a"; }
 
     filterAll();
   }
@@ -521,19 +677,13 @@
       const subject = row.getAttribute("data-subject") || "";
       const index   = row.id.replace("row-", "");
       const detail  = document.getElementById("details-" + index);
-
       const matchSearch = docket.includes(search);
-
       let matchFilter = true;
-      if(activeFilter === "bill"){
-        matchFilter = BILL_SUBJECTS.includes(subject);
-      } else if(activeFilter === "letter"){
-        matchFilter = subject === "Letter";
-      }
+      if(activeFilter === "bill")   matchFilter = BILL_SUBJECTS.includes(subject);
+      else if(activeFilter === "letter") matchFilter = subject === "Letter";
 
-      if(matchSearch && matchFilter){
-        row.style.display = "";
-        visibleCount++;
+      if(matchSearch && matchFilter) {
+        row.style.display = ""; visibleCount++;
       } else {
         row.style.display = "none";
         if(detail) detail.style.display = "none";
@@ -546,13 +696,11 @@
   function toggleDetails(i) {
     const detail = document.getElementById("details-" + i);
     const isOpen = detail.style.display === "table-row";
-
     document.querySelectorAll(".data-row").forEach(r => r.style.background = "");
     document.querySelectorAll("[id^='details-']").forEach(r => r.style.display = "none");
-
-    if(!isOpen){
+    if(!isOpen) {
       detail.style.display = "table-row";
-      document.getElementById("row-" + i).style.background = "#faf6ee";
+      document.getElementById("row-" + i).style.background = document.getElementById("row-" + i).classList.contains("row-complete") ? "#e8f5e9" : "#faf6ee";
     }
   }
 </script>
