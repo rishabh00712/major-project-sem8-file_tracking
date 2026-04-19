@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@upstash/redis": "^1.37.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.9.0",
     "connect-pg-simple": "^10.0.0",

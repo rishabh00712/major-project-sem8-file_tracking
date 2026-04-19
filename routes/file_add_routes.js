@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require("../config/db");
 const isAuth = require("./middleware/auth");
 const nodemailer = require("nodemailer");
+const { clearSearchCache } = require("../config/cache");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -143,7 +144,9 @@ Indian Institute of Engineering Science and Technology, Shibpur`
 
         await transporter.sendMail(mailOptions);
         console.log("✅ Email sent to:", email);
-
+        
+        await clearSearchCache();
+        
         // ── DONE ──
         io.to(jobId).emit("job:done", {
           jobId,

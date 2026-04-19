@@ -8,6 +8,6 @@
 <%- include("partials/header") %>
 <%- include("partials/file_search_body") %>
 <%- include("partials/footer") %>
-
+<%- include("partials/error_showing", { error: typeof error !== 'undefined' ? error : null }) %>
 </body>
 </html>

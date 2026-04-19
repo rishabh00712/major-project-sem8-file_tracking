@@ -1,43 +1,70 @@
-// routes/searchRoutes.js
-
 const express = require("express");
-const router = express.Router();
-const pool = require("../config/db");
-const isAuth = require("./middleware/auth");
+const router  = express.Router();
+const pool    = require("../config/db");
+const isAuth  = require("./middleware/auth");
+const { getCache, setCache, clearSearchCache, CACHE_PREFIX } = require("../config/cache");
 
 const ROWS_PER_PAGE = 10;
 
 // ─────────────────────────────────────────────
-// GET /file_search  — paginated file list
+// GET /file_search — paginated file list (cached)
 // ─────────────────────────────────────────────
 router.get("/file_search", isAuth, async (req, res) => {
   try {
     const currentPage = parseInt(req.query.page) || 1;
+    const cacheKey    = `${CACHE_PREFIX}${currentPage}`;
+
+    // ── Pick up any error from query string ──
+    const error = req.query.error ? decodeURIComponent(req.query.error) : null;
+
+    // ── Check cache ──
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      console.log(`⚡ Cache HIT: page ${currentPage}`);
+      return res.render("file_search", {
+        files:       cached.files,
+        currentPage: cached.currentPage,
+        totalPages:  cached.totalPages,
+        active:      "file_search",
+        error,
+      });
+    }
+
+    console.log(`🔍 Cache MISS: page ${currentPage} — querying DB`);
+
+    // ── Cache miss: query DB ──
     const offset = (currentPage - 1) * ROWS_PER_PAGE;
 
-    const countResult = await pool.query("SELECT COUNT(*) FROM files");
-    const totalRows = parseInt(countResult.rows[0].count);
+    const [countResult, result] = await Promise.all([
+      pool.query("SELECT COUNT(*) FROM files"),
+      pool.query(
+        "SELECT * FROM files ORDER BY date DESC LIMIT $1 OFFSET $2",
+        [ROWS_PER_PAGE, offset]
+      ),
+    ]);
+
+    const totalRows  = parseInt(countResult.rows[0].count);
     const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE);
 
-    const result = await pool.query(
-      "SELECT * FROM files ORDER BY date DESC LIMIT $1 OFFSET $2",
-      [ROWS_PER_PAGE, offset]
-    );
+    // ── Store in cache ──
+    await setCache(cacheKey, { files: result.rows, currentPage, totalPages });
 
-    res.render("file_search", {
-      files: result.rows,
+    return res.render("file_search", {
+      files:      result.rows,
       currentPage,
       totalPages,
-      active: "file_search",
+      active:     "file_search",
+      error,
     });
+
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error fetching files");
+    res.redirect(`/file_search?error=${encodeURIComponent("Failed to load files. Please try again.")}`);
   }
 });
 
 // ─────────────────────────────────────────────
-// POST /complete_file/:docket  — mark as complete
+// POST /complete_file/:docket — mark as complete
 // ─────────────────────────────────────────────
 router.post("/complete_file/:docket", isAuth, async (req, res) => {
   const { docket } = req.params;
@@ -46,17 +73,18 @@ router.post("/complete_file/:docket", isAuth, async (req, res) => {
       "UPDATE files SET complete = TRUE WHERE docket_number = $1",
       [docket]
     );
-    // Redirect back to the same page the user was on (referer), or default
-    const referer = req.get("Referer") || "/file_search";
-    res.redirect(referer);
+    await clearSearchCache();
+    res.redirect(req.get("Referer") || "/file_search");
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error completing file");
+    const referer = req.get("Referer") || "/file_search";
+    const base    = referer.split("?")[0];
+    res.redirect(`${base}?error=${encodeURIComponent("Failed to complete file. Please try again.")}`);
   }
 });
 
 // ─────────────────────────────────────────────
-// POST /reopen_file/:docket  — mark as in-progress
+// POST /reopen_file/:docket — mark as in-progress
 // ─────────────────────────────────────────────
 router.post("/reopen_file/:docket", isAuth, async (req, res) => {
   const { docket } = req.params;
@@ -65,16 +93,18 @@ router.post("/reopen_file/:docket", isAuth, async (req, res) => {
       "UPDATE files SET complete = FALSE WHERE docket_number = $1",
       [docket]
     );
-    const referer = req.get("Referer") || "/file_search";
-    res.redirect(referer);
+    await clearSearchCache();
+    res.redirect(req.get("Referer") || "/file_search");
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error reopening file");
+    const referer = req.get("Referer") || "/file_search";
+    const base    = referer.split("?")[0];
+    res.redirect(`${base}?error=${encodeURIComponent("Failed to reopen file. Please try again.")}`);
   }
 });
 
 // ─────────────────────────────────────────────
-// POST /delete_file/:docket  — delete single row
+// POST /delete_file/:docket — delete single row
 // ─────────────────────────────────────────────
 router.post("/delete_file/:docket", isAuth, async (req, res) => {
   const { docket } = req.params;
@@ -83,41 +113,40 @@ router.post("/delete_file/:docket", isAuth, async (req, res) => {
       "DELETE FROM files WHERE docket_number = $1",
       [docket]
     );
-    const referer = req.get("Referer") || "/file_search";
-    res.redirect(referer);
+    await clearSearchCache();
+    res.redirect(req.get("Referer") || "/file_search");
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error deleting file");
+    const referer = req.get("Referer") || "/file_search";
+    const base    = referer.split("?")[0];
+    res.redirect(`${base}?error=${encodeURIComponent("Failed to delete file. Please try again.")}`);
   }
 });
 
 // ─────────────────────────────────────────────
-// POST /delete_page_files  — delete all visible rows on the page
-// Body: { dockets: JSON string of docket array }
+// POST /delete_page_files — delete all rows on current page
 // ─────────────────────────────────────────────
 router.post("/delete_page_files", isAuth, async (req, res) => {
   try {
-    // Frontend sends dockets as a JSON-stringified array in a hidden input
     const dockets = JSON.parse(req.body.dockets || "[]");
 
     if (!Array.isArray(dockets) || dockets.length === 0) {
-      return res.status(400).send("No dockets provided");
+      return res.redirect(`/file_search?error=${encodeURIComponent("No dockets provided.")}`);
     }
 
-    // Build  $1, $2, $3 … placeholders dynamically
     const placeholders = dockets.map((_, i) => `$${i + 1}`).join(", ");
-
     await pool.query(
       `DELETE FROM files WHERE docket_number IN (${placeholders})`,
       dockets
     );
 
-    // After bulk delete go back to page 1 (current page may now be empty)
+    await clearSearchCache();
     res.redirect("/file_search?page=1");
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error deleting page files");
+    res.redirect(`/file_search?error=${encodeURIComponent("Failed to delete files. Please try again.")}`);
   }
 });
 
 module.exports = router;
+module.exports.clearSearchCache = clearSearchCache;
