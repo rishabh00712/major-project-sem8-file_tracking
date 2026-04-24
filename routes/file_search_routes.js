@@ -3,7 +3,7 @@ const router  = express.Router();
 const pool    = require("../config/db");
 const isAuth  = require("./middleware/auth");
 const { getCache, setCache, clearSearchCache, CACHE_PREFIX } = require("../config/cache");
-
+const { google } = require("googleapis");
 const ROWS_PER_PAGE = 10;
 
 // ─────────────────────────────────────────────
@@ -104,24 +104,58 @@ router.post("/reopen_file/:docket", isAuth, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// POST /delete_file/:docket — delete single row
+// Google Sheets Auth Helper
 // ─────────────────────────────────────────────
-router.post("/delete_file/:docket", isAuth, async (req, res) => {
-  const { docket } = req.params;
-  try {
-    await pool.query(
-      "DELETE FROM files WHERE docket_number = $1",
-      [docket]
-    );
-    await clearSearchCache();
-    res.redirect(req.get("Referer") || "/file_search");
-  } catch (err) {
-    console.error(err);
-    const referer = req.get("Referer") || "/file_search";
-    const base    = referer.split("?")[0];
-    res.redirect(`${base}?error=${encodeURIComponent("Failed to delete file. Please try again.")}`);
-  }
-});
+async function getSheetsClient() {
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    },
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+  return google.sheets({ version: "v4", auth });
+}
+
+// ─────────────────────────────────────────────
+// Append rows to a specific sheet tab
+// ─────────────────────────────────────────────
+async function appendToSheet(sheets, spreadsheetId, sheetName, rows) {
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: `${sheetName}!A1`,
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: { values: rows },
+  });
+}
+
+// ─────────────────────────────────────────────
+// Google Sheets Auth Helper
+// ─────────────────────────────────────────────
+async function getSheetsClient() {
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    },
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+  return google.sheets({ version: "v4", auth });
+}
+
+// ─────────────────────────────────────────────
+// Append rows to a specific sheet tab
+// ─────────────────────────────────────────────
+async function appendToSheet(sheets, spreadsheetId, sheetName, rows) {
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: `${sheetName}!A1`,
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: { values: rows },
+  });
+}
 
 // ─────────────────────────────────────────────
 // POST /delete_page_files — delete all rows on current page
@@ -135,10 +169,60 @@ router.post("/delete_page_files", isAuth, async (req, res) => {
     }
 
     const placeholders = dockets.map((_, i) => `$${i + 1}`).join(", ");
+
+    // 1. Fetch files data before deleting
+    const filesResult = await pool.query(
+      `SELECT * FROM files WHERE docket_number IN (${placeholders})`,
+      dockets
+    );
+
+    // 2. Fetch file_flow data before deleting
+    const fileFlowResult = await pool.query(
+      `SELECT * FROM file_flow WHERE docket_number IN (${placeholders})`,
+      dockets
+    );
+
+    // 3. Delete from DB (file_flow rows auto-delete via CASCADE)
     await pool.query(
       `DELETE FROM files WHERE docket_number IN (${placeholders})`,
       dockets
     );
+
+    // 4. Write to Google Sheets
+    const sheets = await getSheetsClient();
+
+    if (filesResult.rows.length > 0) {
+      const fileRows = filesResult.rows.map((r) => [
+        r.docket_number,
+        r.subject,
+        r.date,
+        r.project_code,
+        r.description,
+        r.pay_amount,
+        r.payable_name,
+        r.department,
+        r.pi_name,
+        r.email,
+        r.complete,
+      ]);
+      await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_files, "files", fileRows);
+    }
+
+    if (fileFlowResult.rows.length > 0) {
+      const flowRows = fileFlowResult.rows.map((r) => [
+        r.id,
+        r.docket_number,
+        r.flow,
+        r.name,
+        r.department,
+        r.date,
+        r.subject,
+        r.hold,
+        r.hold_desc,
+        r.image_file,
+      ]);
+      await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_file_flows, "file_flow", flowRows);
+    }
 
     await clearSearchCache();
     res.redirect("/file_search?page=1");
@@ -148,5 +232,74 @@ router.post("/delete_page_files", isAuth, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// POST /delete_file/:docket — delete single row
+// ─────────────────────────────────────────────
+router.post("/delete_file/:docket", isAuth, async (req, res) => {
+  const { docket } = req.params;
+  try {
+    // 1. Fetch files data before deleting
+    const filesResult = await pool.query(
+      "SELECT * FROM files WHERE docket_number = $1",
+      [docket]
+    );
+
+    // 2. Fetch file_flow data before deleting
+    const fileFlowResult = await pool.query(
+      "SELECT * FROM file_flow WHERE docket_number = $1",
+      [docket]
+    );
+
+    // 3. Delete from DB (file_flow rows auto-delete via CASCADE)
+    await pool.query(
+      "DELETE FROM files WHERE docket_number = $1",
+      [docket]
+    );
+
+    // 4. Write to Google Sheets
+    const sheets = await getSheetsClient();
+
+    if (filesResult.rows.length > 0) {
+      const fileRows = filesResult.rows.map((r) => [
+        r.docket_number,
+        r.subject,
+        r.date,
+        r.project_code,
+        r.description,
+        r.pay_amount,
+        r.payable_name,
+        r.department,
+        r.pi_name,
+        r.email,
+        r.complete,
+      ]);
+      await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_files, "files", fileRows);
+    }
+
+    if (fileFlowResult.rows.length > 0) {
+      const flowRows = fileFlowResult.rows.map((r) => [
+        r.id,
+        r.docket_number,
+        r.flow,
+        r.name,
+        r.department,
+        r.date,
+        r.subject,
+        r.hold,
+        r.hold_desc,
+        r.image_file,
+      ]);
+      await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_file_flows, "file_flow", flowRows);
+    }
+
+    await clearSearchCache();
+    res.redirect(req.get("Referer") || "/file_search");
+  } catch (err) {
+    console.error(err);
+    const referer = req.get("Referer") || "/file_search";
+    const base = referer.split("?")[0];
+    res.redirect(`${base}?error=${encodeURIComponent("Failed to delete file. Please try again.")}`);
+  }
+});
 module.exports = router;
 module.exports.clearSearchCache = clearSearchCache;

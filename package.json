@@ -20,6 +20,7 @@
     "ejs": "^5.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "googleapis": "^171.4.0",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.4",
     "passport": "^0.7.0",
