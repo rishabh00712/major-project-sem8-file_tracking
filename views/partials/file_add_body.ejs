@@ -139,11 +139,17 @@
         <label style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:#5a6a7a;">
           Docket Number <span style="color:#b8922a;">*</span>
         </label>
-        <input type="text" name="docket_number" placeholder="e.g. DKT-00123" required
+        <input type="text" name="docket_number" id="docket_number" required
+          placeholder="Select a subject first"
           style="font-family:'DM Sans',sans-serif; font-size:14px; color:#06172e; background:#faf9f7; border:1px solid #ddd8ce; border-radius:2px; padding:10px 14px; width:100%; outline:none;"
           onfocus="this.style.borderColor='#b8922a'; this.style.boxShadow='0 0 0 3px rgba(184,146,42,0.1)'; this.style.background='#fff';"
           onblur="this.style.borderColor='#ddd8ce'; this.style.boxShadow='none'; this.style.background='#faf9f7';">
+        <!-- hint shown below the input -->
+        <span id="docket_hint" style="font-size:11px; color:#8a9aaa; margin-top:2px; display:none;">
+          Auto-filled — you can still edit this
+        </span>
       </div>
+
 
       <!-- Description -->
       <div style="display:flex; flex-direction:column; gap:7px; grid-column:1/-1; animation:fieldFadeIn 0.5s ease 0.53s both;">
@@ -239,36 +245,53 @@
 
   </form>
 </div>
-
 <script>
-function handleSubject() {
-  const subject   = document.getElementById("subject").value;
-  const amountField  = document.getElementById("amountField");
-  const payableField = document.getElementById("payableField");
-  const paymentLabel = document.getElementById("paymentSectionLabel");
-  const amount    = document.getElementById("pay_amount");
-  const payable   = document.getElementById("payable_name");
+  const BILL_SUBJECTS  = ["Tax Invoice", "Payable Bill", "Bill"];
+  const next_bill_DN   = "<%= next_bill_DN %>";
+  const next_letter_DN = "<%= next_letter_DN %>";
 
-  if(subject === "Letter"){
-    amountField.classList.add("hidden");
-    payableField.classList.add("hidden");
-    paymentLabel.style.display = "none";
-    amount.removeAttribute("required");
-    payable.removeAttribute("required");
-  } else {
-    amountField.classList.remove("hidden");
-    payableField.classList.remove("hidden");
-    paymentLabel.style.display = "";
-    amount.setAttribute("required", true);
-    payable.setAttribute("required", true);
+  function handleSubject() {
+    const subject      = document.getElementById("subject").value;
+    const amountField  = document.getElementById("amountField");
+    const payableField = document.getElementById("payableField");
+    const paymentLabel = document.getElementById("paymentSectionLabel");
+    const amount       = document.getElementById("pay_amount");
+    const payable      = document.getElementById("payable_name");
+    const dnInput      = document.getElementById("docket_number");
+    const dnHint       = document.getElementById("docket_hint");
+
+    // ── Docket number auto-fill ──
+    if (!subject) {
+      dnInput.value        = "";
+      dnInput.placeholder  = "Select a subject first";
+      dnHint.style.display = "none";
+    } else {
+      const isBill         = BILL_SUBJECTS.includes(subject);
+      dnInput.value        = isBill ? next_bill_DN : next_letter_DN;
+      dnInput.placeholder  = "";
+      dnHint.style.display = "inline";
+    }
+
+    // ── Payment section show/hide ──
+    if (subject === "Letter") {
+      amountField.classList.add("hidden");
+      payableField.classList.add("hidden");
+      paymentLabel.style.display = "none";
+      amount.removeAttribute("required");
+      payable.removeAttribute("required");
+    } else {
+      amountField.classList.remove("hidden");
+      payableField.classList.remove("hidden");
+      paymentLabel.style.display = "";
+      amount.setAttribute("required", true);
+      payable.setAttribute("required", true);
+    }
   }
-}
 
-window.onload = function() {
-  const today = new Date().toISOString().split("T")[0];
-  document.getElementById("date").value = today;
-}
+  window.onload = function () {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("date").value = today;
+  };
 </script>
-
 </body>
 </html>
