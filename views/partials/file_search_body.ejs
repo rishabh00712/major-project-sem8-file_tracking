@@ -543,7 +543,6 @@
 
 <!-- Socket.IO -->
 <script src="/socket.io/socket.io.js"></script>
-
 <script>
   // ── Socket setup ──
   let resolvedSocketId = null;
@@ -561,7 +560,7 @@
     console.warn("Socket.IO not available:", e.message);
   }
 
-  // ── Suppress nav overlay flag (set before any redirect we control) ──
+  // ── Suppress nav overlay flag ──
   window._suppressLoadingOverlay = false;
 
   // ── Nav loading overlay (only fires on uncontrolled navigation) ──
@@ -569,6 +568,18 @@
     if (window._suppressLoadingOverlay) return;
     document.getElementById("navLoadingOverlay").classList.add("show");
   });
+
+  // ── Show overlay with custom message then navigate ──
+  function showOverlayThen(title, subtitle, icon, action, delay) {
+    // Update overlay content
+    document.querySelector(".lo-icon").textContent        = icon || "📁";
+    document.querySelector(".lo-title h1").textContent    = title || "Loading…";
+    document.querySelector(".lo-title p").textContent     = subtitle || "Please wait";
+    document.querySelector(".lo-status").textContent      = "Processing…";
+    window._suppressLoadingOverlay = true;
+    document.getElementById("navLoadingOverlay").classList.add("show");
+    setTimeout(action, delay || 300);
+  }
 
   // ── Delete modal helpers ──
   function logLine(text) {
@@ -599,22 +610,18 @@
       setProgress(0, data.total);
       logLine("Starting deletion of " + data.total + " file(s)…");
     });
-
     socket.on("delete:status", function (data) {
       document.getElementById("deleteStatusMsg").textContent = data.message;
       logLine(data.message);
     });
-
     socket.on("delete:progress", function (data) {
       setProgress(data.done, data.total);
       document.getElementById("deleteStatusMsg").textContent = data.message;
       logLine(data.message);
     });
-
     socket.on("delete:sheets", function (data) {
       logLine(data.message);
     });
-
     socket.on("delete:done", function (data) {
       setProgress(1, 1);
       document.getElementById("deleteStatusMsg").textContent = data.message;
@@ -625,15 +632,13 @@
         window.location.href = "/file_search?page=1";
       }, 2000);
     });
-
     socket.on("delete:error", function (data) {
       showDeleteError(data.message);
     });
   }
 
-  // ── Trigger delete (fetch + socket) ──
+  // ── Trigger delete page (fetch + socket) ──
   function triggerDeletePage(dockets) {
-    // Reset modal
     document.getElementById("deleteModal").style.display    = "flex";
     document.getElementById("deleteLog").innerHTML          = "";
     document.getElementById("deleteDoneMsg").style.display  = "none";
@@ -650,14 +655,9 @@
     })
     .then(function (res) { return res.json(); })
     .then(function (data) {
-      if (!data.success) {
-        // Server returned an error JSON — show it and offer fallback
-        showDeleteError(data.error || "Server returned an error.");
-      }
-      // If success, socket "delete:done" handles redirect — nothing to do here
+      if (!data.success) showDeleteError(data.error || "Server returned an error.");
     })
     .catch(function (err) {
-      // Network error — socket probably dead too, redirect manually
       showDeleteError("Network error: " + err.message + ". Redirecting shortly…");
       setTimeout(function () {
         window._suppressLoadingOverlay = true;
@@ -669,7 +669,7 @@
   // ═══════════════════════════════════════
   // CONFIRM MODAL
   // ═══════════════════════════════════════
-  let activeFilter  = "all";
+  let activeFilter   = "all";
   let _confirmAction = null;
   const BILL_SUBJECTS = ["Tax Invoice", "Payable Bill", "Bill"];
 
@@ -677,8 +677,8 @@
     document.getElementById("confirmIcon").textContent  = icon;
     document.getElementById("confirmTitle").textContent = title;
     document.getElementById("confirmMsg").textContent   = msg;
-    const btn       = document.getElementById("confirmActionBtn");
-    btn.className   = btnClass;
+    const btn     = document.getElementById("confirmActionBtn");
+    btn.className = btnClass;
     btn.textContent = btnText;
     _confirmAction  = action;
     document.getElementById("confirmModal").classList.add("open");
@@ -695,21 +695,35 @@
     if (action) action();
   }
 
-  // ── Post helper (for complete / reopen / single delete) ──
-  function postTo(url) {
-    window._suppressLoadingOverlay = true;
-    const form    = document.createElement("form");
-    form.method   = "POST";
-    form.action   = url;
-    document.body.appendChild(form);
-    form.submit();
+  // ── Post with overlay ──
+  function postWithOverlay(url, overlayTitle, overlaySubtitle, overlayIcon) {
+    showOverlayThen(
+      overlayTitle,
+      overlaySubtitle,
+      overlayIcon,
+      function () {
+        const form  = document.createElement("form");
+        form.method = "POST";
+        form.action = url;
+        document.body.appendChild(form);
+        form.submit();
+      },
+      300
+    );
   }
 
   function confirmComplete(docket) {
     openConfirm("✓", "Complete File",
       "Mark docket " + docket + " as complete? This will close the file.",
       "btn-confirm-green", "Yes, Complete",
-      function () { postTo("/complete_file/" + docket); }
+      function () {
+        postWithOverlay(
+          "/complete_file/" + docket,
+          "Completing File",
+          "Marking docket " + docket + " as complete…",
+          "✓"
+        );
+      }
     );
   }
 
@@ -717,7 +731,14 @@
     openConfirm("↩", "Reopen File",
       "Reopen docket " + docket + "? It will be marked as In Progress again.",
       "btn-confirm-green", "Yes, Reopen",
-      function () { postTo("/reopen_file/" + docket); }
+      function () {
+        postWithOverlay(
+          "/reopen_file/" + docket,
+          "Reopening File",
+          "Marking docket " + docket + " as In Progress…",
+          "↩"
+        );
+      }
     );
   }
 
@@ -725,24 +746,29 @@
     openConfirm("🗑️", "Delete File",
       "Permanently delete docket " + docket + "? This cannot be undone.",
       "btn-confirm-red", "Yes, Delete",
-      function () { postTo("/delete_file/" + docket); }
+      function () {
+        postWithOverlay(
+          "/delete_file/" + docket,
+          "Deleting File",
+          "Removing docket " + docket + " from records…",
+          "🗑️"
+        );
+      }
     );
   }
 
-  // ── Delete PAGE — uses socket/fetch, NOT form submit ──
+  // ── Delete PAGE ──
   function confirmDeletePage() {
     const dockets = [];
     document.querySelectorAll("#fileTable .data-row").forEach(function (row) {
-      if (row.style.display !== "none") {
-        dockets.push(row.getAttribute("data-docket"));
-      }
+      if (row.style.display !== "none") dockets.push(row.getAttribute("data-docket"));
     });
     if (dockets.length === 0) return;
 
     openConfirm("🗑️", "Delete This Page",
       "Permanently delete all " + dockets.length + " file(s) on this page? This cannot be undone.",
       "btn-confirm-red", "Yes, Delete All",
-      function () { triggerDeletePage(dockets); }   // ← fetch + socket, no form submit
+      function () { triggerDeletePage(dockets); }
     );
   }
 
@@ -751,9 +777,9 @@
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       var href = this.getAttribute("href");
-      window._suppressLoadingOverlay = true;
-      document.getElementById("navLoadingOverlay").classList.add("show");
-      setTimeout(function () { window.location.href = href; }, 300);
+      showOverlayThen("Loading File Flow", "Fetching records…", "📁", function () {
+        window.location.href = href;
+      }, 300);
     });
   });
 
@@ -762,9 +788,9 @@
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       var href = this.getAttribute("href");
-      window._suppressLoadingOverlay = true;
-      document.getElementById("navLoadingOverlay").classList.add("show");
-      setTimeout(function () { window.location.href = href; }, 200);
+      showOverlayThen("Loading Files", "Please wait…", "📁", function () {
+        window.location.href = href;
+      }, 200);
     });
   });
 
@@ -779,9 +805,9 @@
     billBtn.style.background   = "transparent"; billBtn.style.border   = "1px solid rgba(184,146,42,0.3)"; billBtn.style.color   = "#8a6010";
     letterBtn.style.background = "transparent"; letterBtn.style.border = "1px solid rgba(42,100,160,0.3)"; letterBtn.style.color = "#1a4a7a";
 
-    if      (type === "all")    { allBtn.style.background    = "#06172e";                  allBtn.style.border    = "1px solid #06172e";    allBtn.style.color    = "#d4a843"; }
-    else if (type === "bill")   { billBtn.style.background   = "rgba(184,146,42,0.15)";    billBtn.style.border   = "1px solid #b8922a";    billBtn.style.color   = "#8a6010"; }
-    else if (type === "letter") { letterBtn.style.background = "rgba(42,100,184,0.12)";    letterBtn.style.border = "1px solid #2a64b8";    letterBtn.style.color = "#1a4a7a"; }
+    if      (type === "all")    { allBtn.style.background    = "#06172e";               allBtn.style.border    = "1px solid #06172e"; allBtn.style.color    = "#d4a843"; }
+    else if (type === "bill")   { billBtn.style.background   = "rgba(184,146,42,0.15)"; billBtn.style.border   = "1px solid #b8922a"; billBtn.style.color   = "#8a6010"; }
+    else if (type === "letter") { letterBtn.style.background = "rgba(42,100,184,0.12)"; letterBtn.style.border = "1px solid #2a64b8"; letterBtn.style.color = "#1a4a7a"; }
 
     filterAll();
   }

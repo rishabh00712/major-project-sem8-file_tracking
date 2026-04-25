@@ -19,17 +19,19 @@
         <span style="font-size:12px; color:#5a6a7a; line-height:1.6;">Botanic Garden, Howrah,<br>West Bengal — 711 103</span>
       </div>
 
-      <!-- Col 2: Quick Links -->
-      <div style="flex:1; min-width:160px; display:flex; flex-direction:column; gap:8px;">
-        <span style="font-size:10px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#b8922a;">Quick Links</span>
-        <a href="/file_add" style="font-size:13px; color:#1a2332; text-decoration:none; padding:3px 0; border-bottom:1px solid transparent; transition:color 0.2s;"
-          onmouseover="this.style.color='#b8922a';" onmouseout="this.style.color='#1a2332';">File Entry</a>
-        <a href="/file_search" style="font-size:13px; color:#1a2332; text-decoration:none; padding:3px 0;"
-          onmouseover="this.style.color='#b8922a';" onmouseout="this.style.color='#1a2332';">File Search</a>
-        <a href="/view_flow" style="font-size:13px; color:#1a2332; text-decoration:none; padding:3px 0;"
-          onmouseover="this.style.color='#b8922a';" onmouseout="this.style.color='#1a2332';">Track File</a>
-      </div>
-
+        <!-- Col 2: Quick Links -->
+        <% if (!locals._isViewer) { %>
+          <div style="flex:1; min-width:160px; display:flex; flex-direction:column; gap:8px;">
+            <span style="font-size:10px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#b8922a;">Quick Links</span>
+            <a href="/file_add" style="font-size:13px; color:#1a2332; text-decoration:none; padding:3px 0; border-bottom:1px solid transparent; transition:color 0.2s;"
+              onmouseover="this.style.color='#b8922a';" onmouseout="this.style.color='#1a2332';">File Entry</a>
+            <a href="/file_search" style="font-size:13px; color:#1a2332; text-decoration:none; padding:3px 0;"
+              onmouseover="this.style.color='#b8922a';" onmouseout="this.style.color='#1a2332';">File Search</a>
+            <a href="/view_flow" style="font-size:13px; color:#1a2332; text-decoration:none; padding:3px 0;"
+              onmouseover="this.style.color='#b8922a';" onmouseout="this.style.color='#1a2332';">Track File</a>
+          </div>
+        <%}%>
+        
       <!-- Col 3: Contact -->
       <div style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:8px;">
         <span style="font-size:10px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#b8922a;">Contact</span>

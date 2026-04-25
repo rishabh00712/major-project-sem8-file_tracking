@@ -9,7 +9,7 @@ const fs = require("fs");
 
 /* ================= GET: DOCKET SEARCH PAGE ================= */
 router.get("/view_flow", (req, res) => {
-  return res.render("docket_search", { active: "" });
+  return res.render("docket_search", { active: "",_isViewer : true });
 });
 
 /* ================= POST: DOCKET SEARCH → REDIRECT TO FILE FLOW ================= */
