@@ -20,6 +20,32 @@ router.get("/file_add", isAuth, async (req, res) => {
   res.render("file_add", { active: "file_add" });
 });
 
+// ✅ Helper: wait until the client joins the socket room
+function waitForSocket(io, jobId, timeoutMs = 8000) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+
+    const interval = setInterval(() => {
+      const room = io.sockets.adapter.rooms.get(jobId);
+      const joined = room && room.size > 0;
+
+      if (joined) {
+        clearInterval(interval);
+        resolve();
+      } else if (Date.now() - start > timeoutMs) {
+        clearInterval(interval);
+        reject(new Error("Socket room join timed out"));
+      }
+    }, 100); // check every 100ms
+  });
+}
+
+// ✅ Helper: format date to YYYY-MM-DD only
+function formatDateOnly(dateStr) {
+  const d = new Date(dateStr);
+  return d.toISOString().split("T")[0]; // "2026-04-24"
+}
+
 // ✅ POST: file add with socket loading
 router.post("/file_add", async (req, res) => {
   const io = req.app.get("io");
@@ -43,27 +69,34 @@ router.post("/file_add", async (req, res) => {
     // ── Render loading screen immediately ──
     res.render("loading_email", { jobId });
 
-    setImmediate(async () => {
+    // ── Wait for socket to connect, then start processing ──
+    (async () => {
       try {
+        // ⏳ Wait until client socket joins the room
+        await waitForSocket(io, jobId);
 
         // STEP 1: Check duplicate docket
         io.to(jobId).emit("job:progress", { jobId, step: "db" });
 
+        // ✅ Check for duplicate docket number
         const check = await pool.query(
-          "SELECT * FROM files WHERE docket_number = $1",
+          "SELECT 1 FROM files WHERE docket_number = $1",
           [docket_number]
         );
 
         if (check.rows.length > 0) {
           return io.to(jobId).emit("job:error", {
             jobId,
-            message: "Docket number already exists.",
+            message: `Docket number "${docket_number}" already exists. Please use a different docket number.`,
             redirect: "/file_add"
           });
         }
 
         const pay_amount_final   = pay_amount   === "" ? null : pay_amount;
         const payable_name_final = payable_name === "" ? null : payable_name;
+
+        // ✅ Store only the date part (no time/timezone)
+        const cleanDate = formatDateOnly(date);
 
         // Insert into files table
         await pool.query(
@@ -73,7 +106,7 @@ router.post("/file_add", async (req, res) => {
           [
             docket_number,
             subject,
-            date,
+            cleanDate,        // ✅ "2026-04-24" only
             project_code,
             description,
             pay_amount_final,
@@ -103,7 +136,7 @@ router.post("/file_add", async (req, res) => {
             "Internal",
             flowName,
             "R&C",
-            date,
+            cleanDate,        // ✅ consistent date format
             "The file is submitted",
             null
           ]
@@ -112,7 +145,7 @@ router.post("/file_add", async (req, res) => {
         // STEP 4: Send email
         io.to(jobId).emit("job:progress", { jobId, step: "email" });
 
-        const formattedDate = new Date(date).toLocaleDateString("en-GB", {
+        const formattedDate = new Date(cleanDate).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "long",
           year: "numeric"
@@ -144,9 +177,9 @@ Indian Institute of Engineering Science and Technology, Shibpur`
 
         await transporter.sendMail(mailOptions);
         console.log("✅ Email sent to:", email);
-        
+
         await clearSearchCache();
-        
+
         // ── DONE ──
         io.to(jobId).emit("job:done", {
           jobId,
@@ -161,7 +194,7 @@ Indian Institute of Engineering Science and Technology, Shibpur`
           redirect: "/file_add"
         });
       }
-    },800);
+    })();
 
   } catch (err) {
     console.error(err);

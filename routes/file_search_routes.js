@@ -156,21 +156,37 @@ async function appendToSheet(sheets, spreadsheetId, sheetName, rows) {
     requestBody: { values: rows },
   });
 }
-
-// ─────────────────────────────────────────────
-// POST /delete_page_files — delete all rows on current page
-// ─────────────────────────────────────────────
 router.post("/delete_page_files", isAuth, async (req, res) => {
+  const io       = req.app.get("io");
+  const socketId = req.body.socketId;
+
+  // Safe emit — never crashes the route if socket fails
+  const emit = (event, data) => {
+    try {
+      if (io && socketId) io.to(socketId).emit(event, data);
+    } catch (e) {
+      console.error("Socket emit failed:", e.message);
+    }
+  };
+
   try {
-    const dockets = JSON.parse(req.body.dockets || "[]");
+    // ── Parse dockets safely whether body is JSON or urlencoded ──
+    const dockets = Array.isArray(req.body.dockets)
+      ? req.body.dockets
+      : JSON.parse(req.body.dockets || "[]");
 
     if (!Array.isArray(dockets) || dockets.length === 0) {
-      return res.redirect(`/file_search?error=${encodeURIComponent("No dockets provided.")}`);
+      emit("delete:error", { message: "No dockets provided." });
+      return res.json({ success: false, error: "No dockets provided." });
     }
+
+    const total = dockets.length;
+    emit("delete:start", { total });
 
     const placeholders = dockets.map((_, i) => `$${i + 1}`).join(", ");
 
     // 1. Fetch files data before deleting
+    emit("delete:status", { message: "Fetching file records…", step: "fetch" });
     const filesResult = await pool.query(
       `SELECT * FROM files WHERE docket_number IN (${placeholders})`,
       dockets
@@ -182,53 +198,74 @@ router.post("/delete_page_files", isAuth, async (req, res) => {
       dockets
     );
 
-    // 3. Delete from DB (file_flow rows auto-delete via CASCADE)
-    await pool.query(
-      `DELETE FROM files WHERE docket_number IN (${placeholders})`,
-      dockets
-    );
+    // 3. Delete files ONE BY ONE and emit progress
+    emit("delete:status", { message: "Deleting files from database…", step: "delete" });
 
-    // 4. Write to Google Sheets
+    for (let i = 0; i < dockets.length; i++) {
+      const docket = dockets[i];
+      await pool.query(`DELETE FROM files WHERE docket_number = $1`, [docket]);
+      emit("delete:progress", {
+        done:    i + 1,
+        total,
+        docket,
+        message: `Deleted docket #${docket} (${i + 1}/${total})`
+      });
+    }
+
+    // 4. Write to Google Sheets — file by file
     const sheets = await getSheetsClient();
 
     if (filesResult.rows.length > 0) {
-      const fileRows = filesResult.rows.map((r) => [
-        r.docket_number,
-        r.subject,
-        r.date,
-        r.project_code,
-        r.description,
-        r.pay_amount,
-        r.payable_name,
-        r.department,
-        r.pi_name,
-        r.email,
-        r.complete,
-      ]);
-      await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_files, "files", fileRows);
+      emit("delete:status", { message: "Backing up files to Google Sheets…", step: "sheets_files" });
+
+      for (let i = 0; i < filesResult.rows.length; i++) {
+        const r = filesResult.rows[i];
+        await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_files, "files", [[
+          r.docket_number, r.subject, r.date, r.project_code,
+          r.description, r.pay_amount, r.payable_name,
+          r.department, r.pi_name, r.email, r.complete,
+        ]]);
+        emit("delete:sheets", {
+          done:    i + 1,
+          total:   filesResult.rows.length,
+          docket:  r.docket_number,
+          message: `Backed up file #${r.docket_number} to Sheets (${i + 1}/${filesResult.rows.length})`
+        });
+      }
     }
 
     if (fileFlowResult.rows.length > 0) {
-      const flowRows = fileFlowResult.rows.map((r) => [
-        r.id,
-        r.docket_number,
-        r.flow,
-        r.name,
-        r.department,
-        r.date,
-        r.subject,
-        r.hold,
-        r.hold_desc,
-        r.image_file,
-      ]);
-      await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_file_flows, "file_flow", flowRows);
+      emit("delete:status", { message: "Backing up file flows to Google Sheets…", step: "sheets_flows" });
+
+      for (let i = 0; i < fileFlowResult.rows.length; i++) {
+        const r = fileFlowResult.rows[i];
+        await appendToSheet(sheets, process.env.GOOGLE_SHEET_ID_file_flows, "file_flow", [[
+          r.id, r.docket_number, r.flow, r.name, r.department,
+          r.date, r.subject, r.hold, r.hold_desc, r.image_file,
+        ]]);
+        emit("delete:sheets", {
+          done:    i + 1,
+          total:   fileFlowResult.rows.length,
+          docket:  r.docket_number,
+          message: `Backed up flow for #${r.docket_number} to Sheets (${i + 1}/${fileFlowResult.rows.length})`
+        });
+      }
     }
 
     await clearSearchCache();
-    res.redirect("/file_search?page=1");
+    emit("delete:done", { message: "All files deleted and backed up successfully!" });
+
+    // ✅ Frontend socket handles redirect — just confirm success here
+    return res.json({ success: true });
+
   } catch (err) {
-    console.error(err);
-    res.redirect(`/file_search?error=${encodeURIComponent("Failed to delete files. Please try again.")}`);
+    console.error("delete_page_files error:", err);
+    emit("delete:error", { message: "Something went wrong during deletion." });
+
+    // ── If socket never connected, fall back to redirect ──
+    if (!res.headersSent) {
+      return res.redirect(`/file_search?error=${encodeURIComponent("Failed to delete files. Please try again.")}`);
+    }
   }
 });
 
