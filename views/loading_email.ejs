@@ -238,7 +238,7 @@
       </div>
       <div class="step-text">
         <span class="step-label" id="label-db">Checking Database</span>
-        <span class="step-desc" id="desc-db">Verifying records</span>
+        <span class="step-desc"  id="desc-db">Verifying records</span>
       </div>
     </div>
 
@@ -250,7 +250,7 @@
       </div>
       <div class="step-text">
         <span class="step-label" id="label-encrypt">Encrypting Data</span>
-        <span class="step-desc" id="desc-encrypt">Securing your information</span>
+        <span class="step-desc"  id="desc-encrypt">Securing your information</span>
       </div>
     </div>
 
@@ -262,7 +262,7 @@
       </div>
       <div class="step-text">
         <span class="step-label" id="label-flow">Saving Record</span>
-        <span class="step-desc" id="desc-flow">Storing data securely</span>
+        <span class="step-desc"  id="desc-flow">Storing data securely</span>
       </div>
     </div>
 
@@ -274,7 +274,7 @@
       </div>
       <div class="step-text">
         <span class="step-label" id="label-email">Sending Email</span>
-        <span class="step-desc" id="desc-email">Delivering confirmation to recipient</span>
+        <span class="step-desc"  id="desc-email">Delivering confirmation to recipient</span>
       </div>
     </div>
 
@@ -306,6 +306,7 @@
   const isHold        = jobId.startsWith('hold_');
   const isCancelHold  = jobId.startsWith('cancelhold_');
   const isAddFlow     = jobId.startsWith('addflow_');
+  const isDeleteFlow  = jobId.startsWith('deleteflow_'); // 👈 NEW
 
   // ── Set titles and step labels based on context ──
   const cardTitle = document.getElementById('cardTitle');
@@ -392,6 +393,18 @@
     document.getElementById('desc-encrypt').textContent  = 'Validating fields';
     document.getElementById('label-flow').textContent    = 'Saving to Database';
     document.getElementById('desc-flow').textContent     = 'Storing flow record';
+    document.getElementById('label-email').textContent   = 'Finalizing';
+    document.getElementById('desc-email').textContent    = 'Almost done...';
+
+  } else if (isDeleteFlow) { // 👈 NEW
+    cardTitle.textContent = 'Deleting Entry';
+    cardIcon.textContent  = '🗑️';
+    document.getElementById('label-db').textContent      = 'Finding Record';
+    document.getElementById('desc-db').textContent       = 'Locating entry in database';
+    document.getElementById('label-encrypt').textContent = 'Removing Data';
+    document.getElementById('desc-encrypt').textContent  = 'Deleting from database';
+    document.getElementById('label-flow').textContent    = 'Saving Changes';
+    document.getElementById('desc-flow').textContent     = 'Updating records';
     document.getElementById('label-email').textContent   = 'Finalizing';
     document.getElementById('desc-email').textContent    = 'Almost done...';
   }
@@ -482,6 +495,7 @@
     else if (isHold)       doneMsg.textContent = '✓ Hold applied successfully!';
     else if (isCancelHold) doneMsg.textContent = '✓ Hold removed successfully!';
     else if (isAddFlow)    doneMsg.textContent = '✓ Flow entry saved successfully!';
+    else if (isDeleteFlow) doneMsg.textContent = '✓ Entry deleted successfully!'; // 👈 NEW
     else                   doneMsg.textContent = '✓ Done!';
 
     doneBanner.classList.add('show');

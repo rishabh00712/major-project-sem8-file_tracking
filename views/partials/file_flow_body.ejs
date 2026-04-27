@@ -5,12 +5,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/file_flow_style.css">
 </head>
-  <style>
-
-  </style>
-
-<link rel="stylesheet" href="/css/file_flow_style.css">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <%
   const hasActiveHold = forms.some(f => f.hold);
@@ -99,7 +93,6 @@
               <!-- Hold exists -->
               <div style="display:flex; flex-direction:column; gap:6px; min-width:160px;">
                 <span class="hold-badge">⏸ On Hold</span>
-                <!-- ↓ MORE SPACE for hold description -->
                 <p class="hold-desc" style="
                   font-size: 12px;
                   color: #5a4a2a;
@@ -186,22 +179,21 @@
       <div class="form-grid">
 
         <div class="field-group">
-          <label>File Flow</label>
-          <select name="file_flow" id="flow" onchange="flowChange()">
+          <label>File Flow <span style="color:red;">*</span></label>
+          <select name="file_flow" id="flow" onchange="flowChange()" required>
             <option value="">Select</option>
             <option value="Internal">Internal</option>
             <option value="External">External</option>
           </select>
         </div>
-        
-        <!-- DELETE this entire field-group div -->
+
         <div class="field-group">
-          <label>Date</label>
-          <input type="date" name="date" id="date">
+          <label>Date <span style="color:red;">*</span></label>
+          <input type="date" name="date" id="date" readonly>
         </div>
 
         <div class="field-group">
-          <label>Name</label>
+          <label>Name <span style="color:red;">*</span></label>
           <select name="name" id="internalNames" style="display:none;">
             <option value="">Select Officer</option>
             <option>EA Sukhen Adhikari</option>
@@ -223,7 +215,7 @@
         </div>
 
         <div class="field-group">
-          <label>Department</label>
+          <label>Department <span style="color:red;">*</span></label>
           <input type="text" name="department" id="dept" placeholder="e.g. Finance Division" required>
         </div>
 
@@ -233,7 +225,7 @@
         </div>
 
         <div class="field-group full" id="uploadDiv">
-          <label>File Upload</label>
+          <label>File Upload <span style="color:red;">*</span></label>
           <input type="file" name="file" accept="image/*" capture="environment">
         </div>
 
@@ -297,10 +289,10 @@
 
 <script>
   <% if(!isViewer){ %>
-  let _holdAction = '';
+  let _holdAction   = '';
   let _cancelAction = '';
-  let _delId = null;
-  let _delDocket = '';
+  let _delId        = null;
+  let _delDocket    = '';
 
   // ── HOLD MODAL ──
   function showHoldModal(action) {
@@ -356,7 +348,7 @@
 
   // ── DELETE FLOW ROW ──
   function showDelFlow(id, docket, name) {
-    _delId = id;
+    _delId     = id;
     _delDocket = docket;
     document.getElementById('delFlowMsg').textContent =
       'Permanently delete the flow entry by "' + name + '" (Docket: ' + docket + ')? This cannot be undone.';
@@ -365,14 +357,14 @@
 
   function closeDelFlow() {
     document.getElementById('delFlowModal').classList.remove('open');
-    _delId = null;
+    _delId     = null;
     _delDocket = '';
   }
 
   function doDelFlow() {
     if (!_delId) return;
-    const form = document.getElementById('delFlowForm');
-    form.action = '/delete_file_flow/' + _delId + '?docket=' + _delDocket;
+    const form   = document.getElementById('delFlowForm');
+    form.action  = '/delete_file_flow/' + _delId + '?docket=' + _delDocket;
     closeDelFlow();
     form.submit();
   }
@@ -389,32 +381,39 @@
   }
 
   function flowChange() {
-    const flow = document.getElementById("flow").value;
-    const dept = document.getElementById("dept");
-    const upload = document.getElementById("uploadDiv");
+    const flow     = document.getElementById("flow").value;
+    const dept     = document.getElementById("dept");
+    const upload   = document.getElementById("uploadDiv");
     const internal = document.getElementById("internalNames");
     const external = document.getElementById("externalName");
 
     if (flow === "Internal") {
-      dept.value = "R&C";
-      upload.style.display = "none";
+      dept.value             = "R&C";
+      upload.style.display   = "none";
       internal.style.display = "block";
-      internal.required = true;
+      internal.required      = true;
       external.style.display = "none";
-      external.required = false;
+      external.required      = false;
     } else if (flow === "External") {
-      dept.value = "";
-      upload.style.display = "block";
+      dept.value             = "";
+      upload.style.display   = "block";
       internal.style.display = "none";
-      internal.required = false;
+      internal.required      = false;
       external.style.display = "block";
-      external.required = true;
+      external.required      = true;
     }
   }
 
-  window.onload = function() {
+  window.onload = function () {
     document.getElementById("externalName").style.display = "none";
-    document.getElementById("uploadDiv").style.display = "none";
-  }
+    document.getElementById("uploadDiv").style.display    = "none";
+
+    // Auto-fill today's date
+    const today = new Date();
+    const yyyy  = today.getFullYear();
+    const mm    = String(today.getMonth() + 1).padStart(2, '0');
+    const dd    = String(today.getDate()).padStart(2, '0');
+    document.getElementById("date").value = `${yyyy}-${mm}-${dd}`;
+  };
   <% } %>
 </script>
