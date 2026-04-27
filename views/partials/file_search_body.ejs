@@ -374,7 +374,7 @@
         <tr style="background:#06172e;">
           <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Docket Number</th>
           <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Project Code</th>
-          <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Date</th>
+          <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Date - Time</th>
           <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Subject</th>
           <th style="font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#d4a843; padding:12px 16px; text-align:left; border:none; white-space:nowrap;">Status</th>
         </tr>
@@ -404,7 +404,7 @@
           <td style="padding:13px 16px; color:#06172e; border:none; vertical-align:middle; font-weight:500;"><%=file.project_code%></td>
 
           <td style="padding:13px 16px; border:none; vertical-align:middle; color:#8a9aaa; white-space:nowrap;">
-            <%=new Date(file.date).toLocaleDateString('en-GB')%>
+            <%= file.date %>
           </td>
 
           <td style="padding:13px 16px; border:none; vertical-align:middle;">

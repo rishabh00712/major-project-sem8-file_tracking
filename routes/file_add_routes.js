@@ -81,10 +81,16 @@ function waitForSocket(io, jobId, timeoutMs = 8000) {
   });
 }
 
-// ✅ Helper: format date to YYYY-MM-DD only
+// ✅ Helper: format date with current server time
 function formatDateOnly(dateStr) {
-  const d = new Date(dateStr);
-  return d.toISOString().split("T")[0]; // "2026-04-24"
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = String(now.getFullYear()).slice(2);
+  const hour = String(now.getHours());
+  const minute = String(now.getMinutes());
+
+  return `${day}/${month}/${year} - ${hour}:${minute}`;
 }
 
 // ✅ POST: file add with socket loading
@@ -186,11 +192,7 @@ router.post("/file_add", async (req, res) => {
         // STEP 4: Send email
         io.to(jobId).emit("job:progress", { jobId, step: "email" });
 
-        const formattedDate = new Date(cleanDate).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric"
-        });
+        const formattedDate = cleanDate; // already readable, use directly in email
 
         const mailOptions = {
           from: '"Research and Consultancy Cell of IIEST Shibpur" <rishabhgarai7@gmail.com>',

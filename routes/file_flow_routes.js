@@ -10,6 +10,17 @@ const fs = require("fs");
 // 🔥 Multer setup (temp storage)
 const upload = multer({ dest: "uploads/" });
 
+// Add this function at the top of flowRoutes.js
+function formatDateOnly() {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = String(now.getFullYear()).slice(2);
+  const hour = String(now.getHours());
+  const minute = String(now.getMinutes());
+  return `${day}/${month}/${year} - ${hour}:${minute}`;
+}
+
 /* ================= GET: FILE FLOW ================= */
 router.get("/file_flow", async (req, res) => {
   try {
@@ -62,7 +73,7 @@ router.post(
     const { docket } = req.query;
 
     // ── Capture all body fields before setTimeout ──
-    const { file_flow, name, department, date, subject } = req.body;
+    const { file_flow, name, department, subject } = req.body;
 
     // ── Capture file before setTimeout ──
     const uploadedFile = req.file || null;
@@ -139,7 +150,7 @@ router.post(
               file_flow,
               finalName,
               department,
-              date,
+              formatDateOnly(),
               subject || null,
               imageUrl
             ]

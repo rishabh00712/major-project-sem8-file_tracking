@@ -54,7 +54,7 @@
           <th>Flow</th>
           <th>Name</th>
           <th>Department</th>
-          <th>Date</th>
+          <th>Date - Time</th>
           <th>Subject</th>
           <th>File</th>
           <th>Action</th>
@@ -77,7 +77,7 @@
           <td style="font-weight:500;"><%=f.name%></td>
           <td style="color:#8a9aaa;"><%=f.department%></td>
           <td style="color:#8a9aaa;">
-            <%= new Date(f.date).toLocaleDateString('en-GB') %>
+            <%= f.date %>
           </td>
           <td><%=f.subject%></td>
 
@@ -193,7 +193,8 @@
             <option value="External">External</option>
           </select>
         </div>
-
+        
+        <!-- DELETE this entire field-group div -->
         <div class="field-group">
           <label>Date</label>
           <input type="date" name="date" id="date">
@@ -412,8 +413,6 @@
   }
 
   window.onload = function() {
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("date").value = today;
     document.getElementById("externalName").style.display = "none";
     document.getElementById("uploadDiv").style.display = "none";
   }
