@@ -212,7 +212,21 @@
   .page-btn.disabled { opacity: 0.35; pointer-events: none; }
   .page-info { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #8a9aaa; margin: 0 6px; }
   .page-ellipsis { font-family: 'DM Sans', sans-serif; font-size: 13px; color: #8a9aaa; padding: 0 4px; line-height: 36px; }
+  
+  html, body {
+  min-height: 100vh;
+}
 
+body {
+  display: flex;
+  flex-direction: column;
+  background: #eae6de; /* match your page bg */
+}
+
+/* Your main content wrapper — whatever wraps the .search-card */
+main, .content-wrapper {
+  flex: 1;
+}
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     .search-card { padding: 28px 20px !important; margin: 16px 12px !important; }
