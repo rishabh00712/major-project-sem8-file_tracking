@@ -16,9 +16,6 @@ const transporter = nodemailer.createTransport({
 });
 
 // // ✅ GET: file add page (protected)
-// router.get("/file_add", isAuth, async (req, res) => {
-//   res.render("file_add", { active: "file_add" });
-// });
 router.get("/file_add", isAuth, async (req, res) => {
   res.set("Cache-Control", "no-store"); // ← add this
   try {
@@ -50,16 +47,16 @@ router.get("/file_add", isAuth, async (req, res) => {
     res.render("file_add", { active: "file_add", next_bill_DN: "S1", next_letter_DN: "R1" });
   }
 });
-router.get("/debug-dn", async (req, res) => {
-  const b = await pool.query(`
-    SELECT MAX(CAST(SUBSTRING(docket_number FROM '^S([0-9]+)$') AS INTEGER)) AS max_num
-    FROM files
-    WHERE subject ILIKE '%Bill%' 
-       OR subject ILIKE '%Payable Bill%' 
-       OR subject ILIKE '%Tax Invoice%'
-  `);
-  res.json({ max_num: b.rows[0].max_num });
-});
+// router.get("/debug-dn", isAuth, async (req, res) => {
+//   const b = await pool.query(`
+//     SELECT MAX(CAST(SUBSTRING(docket_number FROM '^S([0-9]+)$') AS INTEGER)) AS max_num
+//     FROM files
+//     WHERE subject ILIKE '%Bill%' 
+//        OR subject ILIKE '%Payable Bill%' 
+//        OR subject ILIKE '%Tax Invoice%'
+//   `);
+//   res.json({ max_num: b.rows[0].max_num });
+// });
 
 // ✅ Helper: wait until the client joins the socket room
 function waitForSocket(io, jobId, timeoutMs = 8000) {
@@ -94,7 +91,7 @@ function formatDateOnly(dateStr) {
 }
 
 // ✅ POST: file add with socket loading
-router.post("/file_add", async (req, res) => {
+router.post("/file_add", isAuth, async (req, res) => {
   const io = req.app.get("io");
 
   try {

@@ -8,7 +8,7 @@ const sessionMiddleware = session({
     tableName: "session",
     createTableIfMissing: true // ✅ ADD THIS
   }),
-  secret: "mysecretkey",
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {

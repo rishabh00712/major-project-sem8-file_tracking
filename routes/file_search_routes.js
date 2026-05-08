@@ -2,7 +2,7 @@ const express = require("express");
 const router  = express.Router();
 const pool    = require("../config/db");
 const isAuth  = require("./middleware/auth");
-const { getCache, setCache, clearSearchCache, CACHE_PREFIX } = require("../config/cache");
+const { getCache, setCache, clearSearchCache, CACHE_PREFIX, acquireLock, releaseLock, acquireMultipleLocks, releaseMultipleLocks } = require("../config/cache");
 const { google } = require("googleapis");
 const ROWS_PER_PAGE = 10;
 
@@ -156,11 +156,13 @@ async function appendToSheet(sheets, spreadsheetId, sheetName, rows) {
     requestBody: { values: rows },
   });
 }
+// ─────────────────────────────────────────────────────────────────────
+// POST /delete_page_files — bulk delete with Redis mutex per docket
+// ─────────────────────────────────────────────────────────────────────
 router.post("/delete_page_files", isAuth, async (req, res) => {
   const io       = req.app.get("io");
   const socketId = req.body.socketId;
 
-  // Safe emit — never crashes the route if socket fails
   const emit = (event, data) => {
     try {
       if (io && socketId) io.to(socketId).emit(event, data);
@@ -180,6 +182,20 @@ router.post("/delete_page_files", isAuth, async (req, res) => {
       return res.json({ success: false, error: "No dockets provided." });
     }
 
+    // ── Try to acquire locks on ALL dockets before touching the DB ──
+    // If any one docket is already locked, we bail out entirely —
+    // acquireMultipleLocks rolls back any partial locks automatically
+    const lockResult = await acquireMultipleLocks(dockets);
+    if (!lockResult.success) {
+      const msg = `File #${lockResult.blockedBy} is currently being deleted by another user. Please try again in a moment.`;
+      emit("delete:error", { message: msg });
+      if (!res.headersSent) {
+        return res.redirect(`/file_search?error=${encodeURIComponent(msg)}`);
+      }
+      return;
+    }
+
+    // ── All locks acquired — proceed with deletion ────────────────
     const total = dockets.length;
     emit("delete:start", { total });
 
@@ -253,27 +269,55 @@ router.post("/delete_page_files", isAuth, async (req, res) => {
     }
 
     await clearSearchCache();
-    emit("delete:done", { message: "All files deleted and backed up successfully!" });
 
-    // ✅ Frontend socket handles redirect — just confirm success here
+    // ── Release all locks on success ──
+    await releaseMultipleLocks(dockets);
+
+    emit("delete:done", { message: "All files deleted and backed up successfully!" });
     return res.json({ success: true });
 
   } catch (err) {
     console.error("delete_page_files error:", err);
+
+    // ── Parse dockets again just for lock release in catch block ──
+    // (dockets may not be in scope if the parse itself threw)
+    let docketsToRelease = [];
+    try {
+      docketsToRelease = Array.isArray(req.body.dockets)
+        ? req.body.dockets
+        : JSON.parse(req.body.dockets || "[]");
+    } catch (_) {
+      // parse failed — nothing to release
+    }
+    if (docketsToRelease.length > 0) {
+      await releaseMultipleLocks(docketsToRelease);
+    }
+
     emit("delete:error", { message: "Something went wrong during deletion." });
 
-    // ── If socket never connected, fall back to redirect ──
     if (!res.headersSent) {
-      return res.redirect(`/file_search?error=${encodeURIComponent("Failed to delete files. Please try again.")}`);
+      return res.redirect(
+        `/file_search?error=${encodeURIComponent("Failed to delete files. Please try again.")}`
+      );
     }
   }
 });
+
 
 // ─────────────────────────────────────────────
 // POST /delete_file/:docket — delete single row
 // ─────────────────────────────────────────────
 router.post("/delete_file/:docket", isAuth, async (req, res) => {
   const { docket } = req.params;
+
+  // ── Try to acquire lock for this docket ──
+  const locked = await acquireLock(docket);
+  if (!locked) {
+    const msg = `File #${docket} is currently being deleted by another user. Please try again in a moment.`;
+    const base = (req.get("Referer") || "/file_search").split("?")[0];
+    return res.redirect(`${base}?error=${encodeURIComponent(msg)}`);
+  }
+
   try {
     // 1. Fetch files data before deleting
     const filesResult = await pool.query(
@@ -330,9 +374,18 @@ router.post("/delete_file/:docket", isAuth, async (req, res) => {
     }
 
     await clearSearchCache();
+
+    // ── Release lock on success ──
+    await releaseLock(docket);
+
     res.redirect(req.get("Referer") || "/file_search");
+
   } catch (err) {
     console.error(err);
+
+    // ── Always release lock on error too ──
+    await releaseLock(docket);
+
     const referer = req.get("Referer") || "/file_search";
     const base = referer.split("?")[0];
     res.redirect(`${base}?error=${encodeURIComponent("Failed to delete file. Please try again.")}`);

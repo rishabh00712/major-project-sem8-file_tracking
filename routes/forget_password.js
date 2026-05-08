@@ -9,8 +9,8 @@ const transporter = nodemailer.createTransport({
   secure: true,
   port: 465,
   auth: {
-    user: "rishabhgarai7@gmail.com",
-    pass: "xgabndbrcfwliisj"
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -64,7 +64,7 @@ router.post("/forget_password", async (req, res) => {
         io.to(jobId).emit("job:progress", { jobId, step: "flow" });
 
         const otp = Math.floor(100000 + Math.random() * 900000);
-        console.log("Reset OTP:", otp);
+        //console.log("Reset OTP:", otp);
 
         if (!global._resetTemp) global._resetTemp = {};
         global._resetTemp[jobId] = {

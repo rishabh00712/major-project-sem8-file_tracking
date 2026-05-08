@@ -4,11 +4,10 @@ const express = require("express");
 const router  = express.Router();
 const pool    = require("../config/db");
 const multer  = require("multer");
+const isAuth = require("./middleware/auth");
 const cloudinary = require("../config/cloudinary");
-const fs      = require("fs");
-
 // 🔥 Multer setup (temp storage)
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -54,7 +53,7 @@ function waitForSocketReady(io, jobId, timeoutMs = 10000) {
 
 // ─── GET: FILE FLOW ──────────────────────────────────────────────────────────
 
-router.get("/file_flow", async (req, res) => {
+router.get("/file_flow", isAuth, async (req, res) => {
   try {
     const { docket } = req.query;
 
@@ -89,7 +88,7 @@ router.get("/file_flow", async (req, res) => {
 
 // ─── POST: ADD FLOW ──────────────────────────────────────────────────────────
 
-router.post("/file_flow", upload.single("file"), async (req, res) => {
+router.post("/file_flow", isAuth, upload.single("file"), async (req, res) => {
   const io         = req.app.get("io");
   const { docket } = req.query;
 
@@ -119,22 +118,26 @@ router.post("/file_flow", upload.single("file"), async (req, res) => {
 
       let imageUrl = null;
 
-      if (uploadedFile && uploadedFile.path) {
+      if (uploadedFile && uploadedFile.buffer) {
         if (!uploadedFile.mimetype.startsWith("image/")) {
-          fs.unlinkSync(uploadedFile.path);
           return io.to(jobId).emit("job:error", {
             jobId,
             message:  "Only image files are allowed.",
             redirect: `/file_flow?docket=${docket}`,
           });
         }
-
         try {
-          const result = await cloudinary.uploader.upload(uploadedFile.path, {
-            folder: "file_flow_images",
+          imageUrl = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder: "file_flow_images" },
+              (error, result) => {
+                if (error) return reject(error);
+                resolve(result.secure_url);
+              }
+            );
+            stream.end(uploadedFile.buffer);
           });
-          imageUrl = result.secure_url;
-          console.log("UPLOADED URL:", imageUrl);
+          //console.log("UPLOADED URL:", imageUrl);
         } catch (err) {
           console.error("Cloudinary Error:", err);
           return io.to(jobId).emit("job:error", {
@@ -143,8 +146,6 @@ router.post("/file_flow", upload.single("file"), async (req, res) => {
             redirect: `/file_flow?docket=${docket}`,
           });
         }
-
-        fs.unlinkSync(uploadedFile.path);
       } else {
         console.log("⚠️ No file uploaded");
       }
@@ -197,7 +198,7 @@ router.post("/file_flow", upload.single("file"), async (req, res) => {
 
 // ─── POST: HOLD ──────────────────────────────────────────────────────────────
 
-router.post("/hold/:id", async (req, res) => {
+router.post("/hold/:id", isAuth, async (req, res) => {
   const io          = req.app.get("io");
   const { docket }  = req.query;
   const id          = parseInt(req.params.id);
@@ -260,7 +261,7 @@ router.post("/hold/:id", async (req, res) => {
 
 // ─── POST: CANCEL HOLD ───────────────────────────────────────────────────────
 
-router.post("/cancel-hold/:id", async (req, res) => {
+router.post("/cancel-hold/:id", isAuth, async (req, res) => {
   const io         = req.app.get("io");
   const { docket } = req.query;
   const id         = parseInt(req.params.id);
@@ -321,7 +322,7 @@ router.post("/cancel-hold/:id", async (req, res) => {
 });
 
 // ─── POST: DELETE FLOW ENTRY (socket-powered) ────────────────────────────────
-router.post("/delete_file_flow/:id", async (req, res) => {
+router.post("/delete_file_flow/:id", isAuth, async (req, res) => {
   const io         = req.app.get("io");
   const { id }     = req.params;
   const { docket } = req.query;

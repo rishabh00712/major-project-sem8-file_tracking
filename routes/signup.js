@@ -9,8 +9,8 @@ const transporter = nodemailer.createTransport({
   secure: true,
   port: 465,
   auth: {
-    user: "rishabhgarai7@gmail.com",
-    pass: "xgabndbrcfwliisj"
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -60,7 +60,7 @@ router.post("/signup", async (req, res) => {
         await new Promise(r => setTimeout(r, 500));
 
         const otp = Math.floor(100000 + Math.random() * 900000);
-        console.log("OTP:", otp);
+        //console.log("OTP:", otp);
 
         if (!global._signupTemp) global._signupTemp = {};
         global._signupTemp[jobId] = { name, email, password: hashedPassword, otp };
