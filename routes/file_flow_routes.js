@@ -320,7 +320,6 @@ router.post("/cancel-hold/:id", isAuth, async (req, res) => {
     res.send("Error canceling hold");
   }
 });
-
 // ─── POST: DELETE FLOW ENTRY (socket-powered) ────────────────────────────────
 router.post("/delete_file_flow/:id", isAuth, async (req, res) => {
   const io         = req.app.get("io");
@@ -330,7 +329,7 @@ router.post("/delete_file_flow/:id", isAuth, async (req, res) => {
   try {
     const jobId = `deleteflow_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-    res.render("loading_email", { jobId, mode: "delete" }); // 👈 only change
+    res.render("loading_email", { jobId, mode: "delete" });
 
     try {
       await waitForSocketReady(io, jobId);
@@ -344,10 +343,36 @@ router.post("/delete_file_flow/:id", isAuth, async (req, res) => {
       io.to(jobId).emit("job:progress", { jobId, step: "db" });
       await new Promise(r => setTimeout(r, 500));
 
+      // Fetch the row first to check for image
+      const existing = await pool.query(
+        "SELECT image_file FROM file_flow WHERE id = $1 AND docket_number = $2",
+        [id, docket]
+      );
+
       // STEP 2: Deleting record
       io.to(jobId).emit("job:progress", { jobId, step: "encrypt" });
       await new Promise(r => setTimeout(r, 500));
 
+      // If image exists — delete from Cloudinary first
+      if (existing.rows.length > 0 && existing.rows[0].image_file) {
+        try {
+          const imageUrl = existing.rows[0].image_file;
+          const parts    = imageUrl.split("/");
+          const filename = parts[parts.length - 1].split(".")[0]; // abc123
+          const folder   = parts[parts.length - 2];               // file_flow_images
+          const publicId = `${folder}/${filename}`;
+
+          await cloudinary.uploader.destroy(publicId);
+          //console.log("🗑️ Cloudinary image deleted:", publicId);
+        } catch (cloudErr) {
+          console.error("❌ Cloudinary delete error:", cloudErr.message);
+          // don't stop — still delete DB row even if Cloudinary fails
+        }
+      } else {
+        console.log("⚠️ No image found for this row — skipping Cloudinary delete");
+      }
+
+      // Now delete the DB row
       await pool.query(
         "DELETE FROM file_flow WHERE id = $1 AND docket_number = $2",
         [id, docket]
@@ -365,6 +390,7 @@ router.post("/delete_file_flow/:id", isAuth, async (req, res) => {
         jobId,
         redirect: `/file_flow?docket=${docket}`,
       });
+
     } catch (err) {
       console.error("Delete flow async error:", err);
       io.to(jobId).emit("job:error", {

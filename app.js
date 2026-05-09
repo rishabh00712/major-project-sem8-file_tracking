@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
+const helmet = require("helmet");
 require("dotenv").config();
 
 const app = express();
@@ -71,6 +72,7 @@ app.use("/", logout);
 app.use("/", forget_password);
 app.use("/", viewer);
 app.use("/auth", googleAuthRoutes);
+app.use(helmet());
 
 // ------------------- SERVER -------------------
 server.listen(PORT, () => {

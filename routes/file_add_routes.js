@@ -201,7 +201,7 @@ router.post("/file_add", isAuth, async (req, res) => {
 Your file has been successfully submitted to the R&C Cell.
 
 Subject   : ${subject}
-Date      : ${formattedDate}
+Date-Time : ${formattedDate}
 Department: ${department}
 Docket No : ${docket_number}
 
